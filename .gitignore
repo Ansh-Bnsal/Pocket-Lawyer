@@ -1,0 +1,35 @@
+# Python / Backend
+backend/__pycache__/
+backend/routes/__pycache__/
+backend/services/__pycache__/
+*.db
+*.sqlite
+*.sqlite3
+backend/pocket_lawyer.db
+backend/uploads/
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Frontend / Node (if used later)
+node_modules/
+.npm/
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Sensitive Info
+secrets.json
+config.json

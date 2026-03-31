@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pocket Lawyer – AI-Powered Legal Case Management</title>
+  <meta name="description" content="AI-powered legal case continuity and management platform. Structure, manage, and preserve legal cases across their entire lifecycle.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar" id="main-nav">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">⚖️</span>
+        <span class="logo-text">Pocket<span class="logo-accent">Lawyer</span></span>
+      </a>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="case.html" class="nav-link">AI Assistant</a>
+        <a href="login.html" class="nav-link">Sign In</a>
+      </div>
+      <div class="nav-actions">
+        <a href="login.html" class="btn btn-ghost" id="nav-login-btn">Sign In</a>
+        <a href="login.html#register" class="btn btn-primary btn-sm" id="nav-cta-btn">Get Started</a>
+      </div>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+      <div class="hero-orb hero-orb-3"></div>
+    </div>
+    <div class="container hero-content">
+      <div class="hero-badge">🚀 AI-Powered Legal Platform</div>
+      <h1 class="hero-title">
+        Legal Clarity.<br>
+        <span class="gradient-text">Case Continuity.</span><br>
+        One Platform.
+      </h1>
+      <p class="hero-subtitle">
+        Pocket Lawyer transforms legal cases into structured, persistent digital assets — 
+        ensuring clarity for clients, efficiency for lawyers, and continuity across the entire legal lifecycle.
+      </p>
+      <div class="hero-cta">
+        <a href="login.html#register" class="btn btn-primary btn-lg">
+          <span>Start Your Case</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#how-it-works" class="btn btn-glass btn-lg">
+          <span>How It Works</span>
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number" data-count="100">0%</span>
+          <span class="stat-label">Case Continuity</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">AI</span>
+          <span class="stat-label">Powered Structuring</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">24/7</span>
+          <span class="stat-label">Cloud Access</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Section -->
+  <section class="section" id="problem">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">The Problem</span>
+        <h2 class="section-title">Why Legal Cases <span class="gradient-text">Fail Today</span></h2>
+        <p class="section-subtitle">The current legal ecosystem suffers from critical issues that cost time, money, and justice.</p>
+      </div>
+      <div class="problem-grid">
+        <div class="problem-card" data-aos="fade-up">
+          <div class="problem-icon">📋</div>
+          <h3>Unstructured Case Data</h3>
+          <p>Clients describe issues informally. Important details are missed or inconsistent. No standardized format exists.</p>
+        </div>
+        <div class="problem-card" data-aos="fade-up" data-delay="100">
+          <div class="problem-icon">🔄</div>
+          <h3>Poor Case Continuity</h3>
+          <p>When a lawyer changes, the new lawyer re-collects information and rebuilds understanding from scratch.</p>
+        </div>
+        <div class="problem-card" data-aos="fade-up" data-delay="200">
+          <div class="problem-icon">⏱️</div>
+          <h3>Inefficient Preparation</h3>
+          <p>Lawyers handle multiple cases simultaneously with no quick way to revise a case before hearings.</p>
+        </div>
+        <div class="problem-card" data-aos="fade-up" data-delay="300">
+          <div class="problem-icon">📂</div>
+          <h3>Fragmented Management</h3>
+          <p>Documents, notes, and timelines are scattered. No unified system for tracking case progress.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solution / How It Works -->
+  <section class="section section-dark" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">The Solution</span>
+        <h2 class="section-title">Three Layers of <span class="gradient-text">Legal Intelligence</span></h2>
+        <p class="section-subtitle">AI informs. Lawyers act. Platform manages.</p>
+      </div>
+      <div class="layers-grid">
+        <div class="layer-card layer-1">
+          <div class="layer-number">01</div>
+          <div class="layer-icon">🧠</div>
+          <h3>AI-Based Legal Structuring</h3>
+          <p>Input your legal issue. Our AI classifies the case type, asks guided questions, extracts key facts, summarizes documents, and highlights risks.</p>
+          <div class="layer-output">
+            <span class="output-label">Output:</span> A structured case profile, not just raw input
+          </div>
+        </div>
+        <div class="layer-card layer-2">
+          <div class="layer-number">02</div>
+          <div class="layer-icon">⚖️</div>
+          <h3>Legal Service Integration</h3>
+          <p>Connect with verified lawyers, request consultations, legal notice drafting, or document verification. Bridge the gap between understanding and execution.</p>
+          <div class="layer-output">
+            <span class="output-label">Bridge:</span> Understanding → Execution
+          </div>
+        </div>
+        <div class="layer-card layer-3">
+          <div class="layer-number">03</div>
+          <div class="layer-icon">☁️</div>
+          <h3>Case Management System</h3>
+          <p>A persistent, cloud-based workspace with case summaries, timelines, document repository, notes, and multi-user collaboration.</p>
+          <div class="layer-output">
+            <span class="output-label">Ensures:</span> Case continuity regardless of lawyer changes
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Key Features</span>
+        <h2 class="section-title">Everything You Need for <span class="gradient-text">Legal Success</span></h2>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-wrap"><span>🧠</span></div>
+          <h3>AI Case Structuring</h3>
+          <p>Converts unstructured input into organized, actionable case data with summaries and insights.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-wrap"><span>📄</span></div>
+          <h3>Case Summary & Timeline</h3>
+          <p>Clear overview of facts, events, and current status in a visual timeline format.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-wrap"><span>📂</span></div>
+          <h3>Document Management</h3>
+          <p>Secure storage of legal documents with easy access, organization, and version control.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-wrap"><span>🔁</span></div>
+          <h3>Case Continuity</h3>
+          <p>No data loss when lawyers change. Seamless transition between handlers with full history preserved.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-wrap"><span>⏱️</span></div>
+          <h3>Pre-Hearing Prep</h3>
+          <p>Quick case revision for lawyers before hearings. Saves time and improves readiness.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-wrap"><span>👥</span></div>
+          <h3>Multi-User Collaboration</h3>
+          <p>Case assignment, workflow tracking, and team management for law firms.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- User Types Section -->
+  <section class="section section-dark" id="users">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">For Everyone</span>
+        <h2 class="section-title">Built for the <span class="gradient-text">Entire Legal Ecosystem</span></h2>
+      </div>
+      <div class="users-grid">
+        <div class="user-card">
+          <div class="user-icon">👤</div>
+          <h3>Clients</h3>
+          <p class="user-role">Case initiators & data providers</p>
+          <ul class="user-capabilities">
+            <li>Input legal problems naturally</li>
+            <li>Receive AI-powered guidance</li>
+            <li>Maintain structured case records</li>
+            <li>Track case progress in real-time</li>
+          </ul>
+          <a href="login.html#register" class="btn btn-outline btn-block">Register as Client</a>
+        </div>
+        <div class="user-card user-card-featured">
+          <div class="user-icon">⚖️</div>
+          <h3>Private Lawyers</h3>
+          <p class="user-role">Case handlers</p>
+          <ul class="user-capabilities">
+            <li>Access structured case data</li>
+            <li>Review AI summaries & timelines</li>
+            <li>Manage multiple cases efficiently</li>
+            <li>Pre-hearing quick revision</li>
+          </ul>
+          <a href="login.html#register" class="btn btn-primary btn-block">Register as Lawyer</a>
+        </div>
+        <div class="user-card">
+          <div class="user-icon">🏢</div>
+          <h3>Law Firms</h3>
+          <p class="user-role">Multi-lawyer management</p>
+          <ul class="user-capabilities">
+            <li>Assign cases to team members</li>
+            <li>Track firm-wide case progress</li>
+            <li>Manage team collaboration</li>
+            <li>Smooth case reassignment</li>
+          </ul>
+          <a href="login.html#register" class="btn btn-outline btn-block">Register as Firm</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="section cta-section" id="cta">
+    <div class="container">
+      <div class="cta-card">
+        <h2>Ready to Transform Your Legal Experience?</h2>
+        <p>Join Pocket Lawyer and never lose case continuity again.</p>
+        <div class="cta-buttons">
+          <a href="login.html#register" class="btn btn-primary btn-lg">Create Free Account</a>
+          <a href="case.html" class="btn btn-glass btn-lg">Try AI Assistant</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="nav-logo">
+            <span class="logo-icon">⚖️</span>
+            <span class="logo-text">Pocket<span class="logo-accent">Lawyer</span></span>
+          </div>
+          <p>AI-powered legal case continuity and management platform.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Platform</h4>
+          <a href="case.html">AI Assistant</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a href="#features">Features</a>
+        </div>
+        <div class="footer-links">
+          <h4>Company</h4>
+          <a href="#">About Us</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+        </div>
+        <div class="footer-links">
+          <h4>Support</h4>
+          <a href="#">Help Center</a>
+          <a href="#">Contact Us</a>
+          <a href="#">FAQs</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Pocket Lawyer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

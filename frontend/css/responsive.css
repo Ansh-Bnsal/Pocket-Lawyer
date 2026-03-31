@@ -1,0 +1,242 @@
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .dashboard-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .dashboard-sidebar.open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .dashboard-main {
+    margin-left: 0;
+  }
+
+  .chat-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .chat-sidebar.open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-lg);
+    z-index: 200;
+  }
+
+  .chat-main {
+    margin-left: 0;
+  }
+
+  .layers-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background: rgba(10, 11, 20, 0.95);
+    backdrop-filter: blur(20px);
+    flex-direction: column;
+    padding: 24px;
+    border-bottom: 1px solid var(--border-color);
+    gap: 4px;
+  }
+
+  .nav-links.open {
+    display: flex;
+    animation: fadeInDown 0.3s ease;
+  }
+
+  .nav-actions {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: flex;
+  }
+
+  .hero-title {
+    font-size: 2.2rem;
+  }
+
+  .hero-stats {
+    gap: 24px;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .section {
+    padding: 64px 0;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+  }
+
+  .problem-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .users-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cta-card {
+    padding: 40px 24px;
+  }
+
+  .cta-card h2 {
+    font-size: 1.6rem;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .case-meta {
+    display: none;
+  }
+
+  .tabs {
+    border-radius: var(--radius-md);
+  }
+
+  .tab-btn {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  .auth-card {
+    padding: 32px 24px;
+  }
+
+  .role-selector {
+    flex-direction: column;
+  }
+
+  .chat-message {
+    max-width: 95%;
+  }
+
+  .wizard-progress {
+    gap: 0;
+  }
+
+  .wizard-line {
+    width: 30px;
+  }
+
+  .wizard-dot {
+    width: 30px;
+    height: 30px;
+    font-size: 0.75rem;
+  }
+
+  .case-type-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .lawyer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-bar {
+    flex-direction: column;
+  }
+
+  .dashboard-main {
+    padding: 20px 16px;
+  }
+
+  .case-detail-header {
+    padding: 20px;
+  }
+
+  .case-detail-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding-top: 100px;
+  }
+
+  .hero-cta {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-stats {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-actions {
+    flex-direction: column-reverse;
+  }
+
+  .wizard-actions .btn {
+    width: 100%;
+  }
+
+  .filter-group {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+  }
+}
+
+/* --- Print Styles --- */
+@media print {
+  .navbar, .footer, .nav-toggle, .btn, .chat-input-area {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  .section, .dashboard-main {
+    padding: 20px 0;
+  }
+}

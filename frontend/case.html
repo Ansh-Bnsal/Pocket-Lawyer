@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Legal Assistant – Pocket Lawyer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <nav class="navbar scrolled"><div class="nav-container">
+    <a href="index.html" class="nav-logo"><span class="logo-icon">⚖️</span><span class="logo-text">Pocket<span class="logo-accent">Lawyer</span></span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+      <a href="case.html" class="nav-link active">AI Assistant</a>
+    </div>
+    <div class="nav-actions">
+      <a href="login.html" class="btn btn-ghost btn-sm" id="nav-auth-btn">Sign In</a>
+    </div>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div></nav>
+
+  <div class="chat-layout">
+    <!-- Sidebar: Conversations -->
+    <aside class="chat-sidebar" id="chat-sidebar">
+      <button class="btn btn-primary btn-block" onclick="newConversation()">➕ New Chat</button>
+      <div class="conv-list" id="conv-list"></div>
+    </aside>
+
+    <!-- Chat Area -->
+    <div class="chat-main">
+      <div class="chat-header">
+        <div>
+          <h3 style="font-size:1.1rem;">🧠 AI Legal Assistant</h3>
+          <p style="font-size:0.8rem;color:var(--text-muted);">Describe your legal issue to get structured guidance</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleChatSidebar()" style="display:none;" id="sidebar-toggle-btn">📋 History</button>
+      </div>
+
+      <div class="chat-disclaimer">
+        ⚠️ AI provides legal information and structuring assistance, not legal advice or judgment. Always consult a qualified lawyer for legal decisions.
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-message ai">
+          <div class="chat-avatar">🧠</div>
+          <div class="chat-bubble">
+            <strong>Welcome to AI Legal Assistant!</strong><br><br>
+            I can help you:<br>
+            • <strong>Understand</strong> your legal situation<br>
+            • <strong>Classify</strong> your case type<br>
+            • <strong>Identify</strong> key facts and risks<br>
+            • <strong>Structure</strong> your case for better management<br><br>
+            Tell me about your legal issue, and I'll help you organize it into a structured case profile.
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="chat-input-wrap">
+          <textarea class="chat-input" id="chat-input" placeholder="Describe your legal issue..." rows="1" onkeydown="handleChatKeydown(event)"></textarea>
+          <button class="chat-send-btn" onclick="sendMessage()" id="send-btn">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/chat.js"></script>
+  <script>
+    document.getElementById('nav-toggle')?.addEventListener('click', () => {
+      document.getElementById('nav-links')?.classList.toggle('open');
+    });
+
+    // Update auth button
+    if (API.isLoggedIn()) {
+      const btn = document.getElementById('nav-auth-btn');
+      btn.textContent = '📊 Dashboard';
+      const user = API.getUser();
+      btn.href = user.role === 'lawyer' ? 'lawyer_dashboard.html' : user.role === 'firm' ? 'firm_dashboard.html' : 'dashboard.html';
+    }
+
+    function toggleChatSidebar() {
+      document.getElementById('chat-sidebar')?.classList.toggle('open');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firm Dashboard – Pocket Lawyer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <nav class="navbar scrolled"><div class="nav-container">
+    <a href="index.html" class="nav-logo"><span class="logo-icon">⚖️</span><span class="logo-text">Pocket<span class="logo-accent">Lawyer</span></span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="firm_dashboard.html" class="nav-link active">Dashboard</a>
+    </div>
+    <div class="nav-actions">
+      <span class="btn btn-ghost" id="user-greeting"></span>
+      <a href="#" class="btn btn-ghost btn-sm" onclick="handleLogout()">Logout</a>
+    </div>
+    <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
+  </div></nav>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Firm Panel</div>
+        <a href="firm_dashboard.html" class="sidebar-link active"><span class="link-icon">📊</span> Overview</a>
+        <a href="case.html" class="sidebar-link"><span class="link-icon">🧠</span> AI Assistant</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Management</div>
+        <a href="#" class="sidebar-link" onclick="showSection('cases')"><span class="link-icon">📋</span> All Cases <span class="link-badge" id="cases-badge">0</span></a>
+        <a href="#" class="sidebar-link" onclick="showSection('lawyers')"><span class="link-icon">👥</span> Team Members</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Account</div>
+        <a href="#" class="sidebar-link" onclick="handleLogout()"><span class="link-icon">🚪</span> Logout</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <div class="dashboard-header">
+        <div>
+          <h1 id="welcome-msg">Firm Dashboard</h1>
+          <p>Manage your firm's cases and team</p>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div id="section-cases">
+        <h2 style="font-size:1.3rem;margin-bottom:16px;">Firm Cases</h2>
+        <div id="case-list" class="case-list"></div>
+      </div>
+
+      <div id="section-lawyers" style="display:none;">
+        <h2 style="font-size:1.3rem;margin-bottom:16px;">Registered Lawyers</h2>
+        <div id="lawyer-list" class="lawyer-grid"></div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    document.getElementById('nav-toggle')?.addEventListener('click', () => document.getElementById('nav-links')?.classList.toggle('open'));
+
+    let allCases = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!Utils.requireAuth()) return;
+      const user = API.getUser();
+      if (user.role !== 'firm') { window.location.href = 'dashboard.html'; return; }
+
+      document.getElementById('user-greeting').textContent = '🏢 ' + (user.firmName || user.name);
+      document.getElementById('welcome-msg').textContent = (user.firmName || user.name);
+
+      try { allCases = await API.getCases(); } catch(e) { allCases = []; }
+      renderAll();
+    });
+
+    function handleLogout() { API.logout(); }
+
+    function renderAll() {
+      const cases = allCases;
+
+      document.getElementById('stats-grid').innerHTML = `
+        <div class="stat-card"><div class="stat-card-icon blue">📋</div><h3>${cases.length}</h3><p>Total Cases</p></div>
+        <div class="stat-card"><div class="stat-card-icon green">👥</div><h3>0</h3><p>Team Members</p></div>
+        <div class="stat-card"><div class="stat-card-icon amber">🟢</div><h3>${cases.filter(c => c.status === 'active').length}</h3><p>Active Cases</p></div>
+        <div class="stat-card"><div class="stat-card-icon purple">📂</div><h3>0</h3><p>Documents</p></div>
+      `;
+      document.getElementById('cases-badge').textContent = cases.length;
+
+      const caseEl = document.getElementById('case-list');
+      if (cases.length === 0) {
+        caseEl.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><h3>No cases yet</h3><p>Firm cases will appear here.</p></div>';
+      } else {
+        caseEl.innerHTML = cases.map(c => `
+          <a href="case_detail.html?id=${c.id}" class="case-item">
+            <span class="case-status-dot ${c.status}"></span>
+            <div class="case-info"><h4>${Utils.escapeHtml(c.title)}</h4><p>${Utils.getCaseTypeLabel(c.case_type)} · ${Utils.escapeHtml(c.client_name || '')}</p></div>
+            <div class="case-meta"><span class="badge badge-${Utils.statusColors[c.status] || 'neutral'}">${c.status}</span></div>
+          </a>
+        `).join('');
+      }
+
+      const lawyerEl = document.getElementById('lawyer-list');
+      lawyerEl.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><h3>Team management coming soon</h3><p>Assign cases and manage your firm\'s lawyers.</p></div>';
+    }
+
+    function showSection(s) {
+      document.getElementById('section-cases').style.display = s === 'cases' ? 'block' : 'none';
+      document.getElementById('section-lawyers').style.display = s === 'lawyers' ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
