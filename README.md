@@ -39,14 +39,18 @@ cd backend
 pip install -r requirements.txt
 ```
 
-### 3. Environment Variables (Optional)
-To enable the AI structuring features, you need an API key. By default, the system uses Google Gemini.
+### 3. API Key Configuration (Crucial)
+To enable the AI structuring features, you **must** configure an API key. By default, the system uses Google Gemini's free tier. 
 
-**Windows (PowerShell):**
-```powershell
-$env:GEMINI_API_KEY="your-gemini-api-key-here"
-```
-*(Alternatively, you can set `OPENAI_API_KEY` and change `AI_PROVIDER = 'openai'` in `backend/config.py`)*
+1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and create a free API Key.
+2. In the `backend` folder, duplicate the file named `config.example.py`.
+3. Rename the duplicated file to exactly `config.py`.
+4. Open your new `config.py` file and paste your key inside the empty string quotes on this line:
+   ```python
+   # Google Gemini (default)
+   GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'PASTE_YOUR_KEY_HERE')
+   ```
+*(Note: `config.py` is safely ignored by Git so your keys won't leak when you push!)*
 
 ### 4. Start the Application
 ```bash
