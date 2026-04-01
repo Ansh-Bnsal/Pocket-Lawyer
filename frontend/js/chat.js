@@ -39,11 +39,17 @@ function handleFileSelect(e) {
     if (!file) return;
     
     selectedFile = file;
-    const preview = document.getElementById('chat-file-preview');
-    const filename = document.getElementById('selected-filename');
+    document.getElementById('selected-filename').innerText = file.name;
     
-    filename.innerText = file.name;
-    preview.style.display = 'flex';
+    // Show file size
+    const sizeKB = (file.size / 1024).toFixed(0);
+    const sizeStr = sizeKB > 1024 ? (sizeKB / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+    document.getElementById('selected-filesize').innerText = `(${sizeStr})`;
+    
+    document.getElementById('chat-file-preview').style.display = 'flex';
+    
+    // Auto-focus textarea so user can type a message alongside
+    document.getElementById('chat-input').focus();
 }
 
 function clearFile() {
@@ -135,8 +141,12 @@ async function sendMessage() {
 
     const messagesEl = document.getElementById('chat-messages');
 
-    // 1. SHOW USER MESSAGE IN UI
-    let userDisplay = text || (selectedFile ? `Analyzing document: ${selectedFile.name}` : "");
+    // 1. SHOW USER MESSAGE IN UI (text + file together)
+    let userDisplay = text;
+    if (selectedFile) {
+        const fileTag = `📎 ${selectedFile.name}`;
+        userDisplay = text ? `${text}\n\n${fileTag}` : fileTag;
+    }
     messagesEl.innerHTML += renderMessage('user', userDisplay);
     
     // 2. PREPARE MULTIPART DATA
@@ -157,16 +167,8 @@ async function sendMessage() {
     messagesEl.scrollTop = messagesEl.scrollHeight;
 
     try {
-        // 4. CALL REAL API GATEWAY
-        const response = await fetch(`${API.BASE_URL}/chat`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('pocket_lawyer_token')}`
-            },
-            body: formData
-        });
-
-        const data = await response.json();
+        // 4. CALL REAL API GATEWAY (Using standard API helper)
+        const data = await API.postForm('/chat', formData);
         
         // Remove typing indicator
         document.getElementById(typingId)?.remove();

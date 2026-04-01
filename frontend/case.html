@@ -85,15 +85,18 @@
           </div>
 
           <div class="chat-input-area">
-            <div id="chat-file-preview" class="chat-file-preview" style="display: none;">
-              <span class="file-icon">📄</span>
-              <span id="selected-filename">filename.pdf</span>
-              <button class="remove-file" onclick="clearFile()">×</button>
-            </div>
+            <input type="file" id="chat-file-input" style="display:none;" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" onchange="handleFileSelect(event)">
             <div class="chat-input-wrap">
-              <input type="file" id="chat-file-input" style="display: none;" onchange="handleFileSelect(event)">
               <button class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="Attach Document (PDF/Image)">📎</button>
-              <textarea class="chat-input" id="chat-input" placeholder="Describe your issue or attach a document..." rows="1" onkeydown="handleChatKeydown(event)"></textarea>
+              <div class="chat-composer">
+                <div id="chat-file-preview" class="chat-file-chip" style="display:none;">
+                  <span class="chip-icon">📄</span>
+                  <span id="selected-filename" class="chip-name">file.pdf</span>
+                  <span id="selected-filesize" class="chip-size"></span>
+                  <button class="chip-remove" onclick="clearFile()" title="Remove">✕</button>
+                </div>
+                <textarea class="chat-input" id="chat-input" placeholder="Describe your issue or attach a document..." rows="1" onkeydown="handleChatKeydown(event)"></textarea>
+              </div>
               <button class="chat-send-btn" onclick="sendMessage()" id="send-btn">➤</button>
             </div>
           </div>
@@ -110,10 +113,30 @@
   <script src="js/chat.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      if (!API.isLoggedIn()) window.location.href = 'login.html';
+      if (!API.isLoggedIn()) { window.location.href = 'login.html'; return; }
       const user = API.getUser();
       const greeting = document.getElementById('user-greeting');
       if (greeting) greeting.innerText = `Hi, ${user.name}`;
+      
+      // Dynamically update dashboard links based on role
+      let dashboardUrl = 'dashboard.html';
+      if (user.role === 'firm' || (user.role === 'lawyer' && user.firmRole === 'admin')) {
+        dashboardUrl = 'firm_dashboard.html';
+      } else if (user.role === 'lawyer') {
+        dashboardUrl = 'lawyer_dashboard.html';
+      }
+      
+      const navDashboard = document.querySelector('aside.dashboard-sidebar a[href="dashboard.html"]');
+      if (navDashboard) navDashboard.href = dashboardUrl;
+      
+      // Hide Citizen-only tabs for Lawyers/Firms
+      if (user.role === 'lawyer' || user.role === 'firm') {
+         const servicesLink = document.querySelector('aside.dashboard-sidebar a[href="legal_services.html"]');
+         if (servicesLink) servicesLink.style.display = 'none';
+         
+         const recordsSections = document.querySelectorAll('aside.dashboard-sidebar .sidebar-section');
+         if (recordsSections.length > 1) recordsSections[1].style.display = 'none'; // Hides 'My Records' section
+      }
     });
 
     function toggleChatSidebar() {

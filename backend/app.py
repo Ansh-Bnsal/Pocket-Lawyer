@@ -11,6 +11,7 @@ from routes.case_routes import case_bp
 from routes.chat_routes import chat_bp
 from routes.upload_routes import upload_bp
 from routes.service_routes import service_bp
+from routes.firm_routes import firm_bp
 import os
 
 
@@ -35,6 +36,7 @@ def create_app():
     app.register_blueprint(chat_bp, url_prefix='/api')
     app.register_blueprint(upload_bp, url_prefix='/api')
     app.register_blueprint(service_bp, url_prefix='/api')
+    app.register_blueprint(firm_bp, url_prefix='/api/firm')
 
     # Serve frontend static files
     frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')

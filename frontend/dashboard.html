@@ -163,8 +163,18 @@
   <script src="js/app_state.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      if (!API.isLoggedIn()) window.location.href = 'login.html';
+      if (!API.isLoggedIn()) { window.location.href = 'login.html'; return; }
       const user = API.getUser();
+      
+      // Strict role enforcement logic
+      if (user.role === 'firm' || (user.role === 'lawyer' && user.firmRole === 'admin')) {
+        window.location.href = 'firm_dashboard.html';
+        return;
+      } else if (user.role === 'lawyer') {
+        window.location.href = 'lawyer_dashboard.html';
+        return;
+      }
+
       document.getElementById('user-greeting').innerText = `Hi, ${user.name}`;
       document.getElementById('welcome-msg').innerText = `Welcome, ${user.name}`;
       

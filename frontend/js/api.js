@@ -3,7 +3,9 @@
    Replaces localStorage-only Store with real Flask API calls.
    ============================================ */
 
-const API_BASE = window.location.origin + '/api';
+const API_BASE = (window.location.origin.startsWith('file') || window.location.hostname === 'localhost') 
+  ? 'http://127.0.0.1:5000/api' 
+  : window.location.origin + '/api';
 
 const API = {
   _token: localStorage.getItem('pl_token'),

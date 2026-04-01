@@ -22,6 +22,7 @@
       </a>
       <div class="nav-links" id="nav-links">
         <a href="index.html" class="nav-link active">Home</a>
+        <a href="#pricing" class="nav-link">Pricing</a>
         <a href="dashboard.html" class="nav-link">Dashboard</a>
         <a href="case.html" class="nav-link">AI Assistant</a>
         <a href="login.html" class="nav-link">Sign In</a>
@@ -218,12 +219,12 @@
         <div class="user-card user-card-featured">
           <div class="user-icon">⚖️</div>
           <h3>Private Lawyers</h3>
-          <p class="user-role">Case handlers</p>
+          <p class="user-role">Independent case handlers</p>
           <ul class="user-capabilities">
             <li>Access structured case data</li>
             <li>Review AI summaries & timelines</li>
             <li>Manage multiple cases efficiently</li>
-            <li>Pre-hearing quick revision</li>
+            <li>Join a firm anytime with invite code</li>
           </ul>
           <a href="login.html#register" class="btn btn-primary btn-block">Register as Lawyer</a>
         </div>
@@ -234,14 +235,96 @@
           <ul class="user-capabilities">
             <li>Assign cases to team members</li>
             <li>Track firm-wide case progress</li>
-            <li>Manage team collaboration</li>
-            <li>Smooth case reassignment</li>
+            <li>Real-time team collaboration</li>
+            <li>Workload balancing & transfers</li>
           </ul>
-          <a href="login.html#register" class="btn btn-outline btn-block">Register as Firm</a>
+          <a href="#pricing" class="btn btn-outline btn-block">Choose a Plan ↓</a>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- Firm Pricing Section -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">For Law Firms</span>
+        <h2 class="section-title">Plans Built for <span class="gradient-text">Your Firm</span></h2>
+        <p class="section-subtitle">Subscribe. Invite your team. Collaborate on cases in real-time.</p>
+      </div>
+      <div class="users-grid">
+        <div class="user-card">
+          <div class="user-icon" style="font-size:2rem;">🚀</div>
+          <h3>Starter</h3>
+          <p class="user-role" style="font-size:2rem;font-weight:800;margin:12px 0;">₹999<span style="font-size:0.9rem;font-weight:400;">/mo</span></p>
+          <ul class="user-capabilities">
+            <li>Up to <strong>5</strong> team members</li>
+            <li>Case assignment & transfers</li>
+            <li>AI Document Analysis</li>
+            <li>Shared case workspace</li>
+            <li>Invite code for members</li>
+          </ul>
+          <button class="btn btn-outline btn-block" onclick="openFirmModal('starter')">Get Started</button>
+        </div>
+        <div class="user-card user-card-featured">
+          <div style="position:absolute;top:-12px;right:16px;background:linear-gradient(135deg,var(--primary),var(--accent));color:white;padding:4px 14px;border-radius:20px;font-size:0.75rem;font-weight:700;">POPULAR</div>
+          <div class="user-icon" style="font-size:2rem;">⚡</div>
+          <h3>Professional</h3>
+          <p class="user-role" style="font-size:2rem;font-weight:800;margin:12px 0;">₹2,499<span style="font-size:0.9rem;font-weight:400;">/mo</span></p>
+          <ul class="user-capabilities">
+            <li>Up to <strong>20</strong> team members</li>
+            <li>Everything in Starter</li>
+            <li>AI Precedent Search</li>
+            <li>Real-time case collaboration</li>
+            <li>Priority support</li>
+          </ul>
+          <button class="btn btn-primary btn-block" onclick="openFirmModal('professional')">Get Started</button>
+        </div>
+        <div class="user-card">
+          <div class="user-icon" style="font-size:2rem;">🏛️</div>
+          <h3>Enterprise</h3>
+          <p class="user-role" style="font-size:2rem;font-weight:800;margin:12px 0;">₹4,999<span style="font-size:0.9rem;font-weight:400;">/mo</span></p>
+          <ul class="user-capabilities">
+            <li>Up to <strong>100</strong> team members</li>
+            <li>Everything in Professional</li>
+            <li>Dedicated account manager</li>
+            <li>Custom integrations</li>
+            <li>SLA & compliance tools</li>
+          </ul>
+          <button class="btn btn-outline btn-block" onclick="openFirmModal('enterprise')">Contact Sales</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Firm Creation Modal -->
+  <div id="firm-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+    <div style="background:var(--card-bg);width:90%;max-width:480px;border-radius:16px;padding:40px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);border:1px solid var(--border);">
+      <h2 style="margin-bottom:8px;">🏢 Create Your Firm</h2>
+      <p style="color:var(--text-muted);margin-bottom:24px;">Set up your firm and invite your team.</p>
+      <form onsubmit="handleCreateFirm(event)">
+        <input type="hidden" id="firm-plan" value="starter">
+        <div class="form-group">
+          <label class="form-label" for="firm-name">Firm Name</label>
+          <input type="text" id="firm-name" class="form-input" placeholder="e.g., Sharma & Associates" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="firm-admin-name">Your Full Name (Admin)</label>
+          <input type="text" id="firm-admin-name" class="form-input" placeholder="Enter your full name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="firm-email">Email Address</label>
+          <input type="email" id="firm-email" class="form-input" placeholder="admin@firm.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="firm-password">Password</label>
+          <input type="password" id="firm-password" class="form-input" placeholder="Create a strong password" required minlength="6">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="firm-submit-btn">Create Firm & Get Invite Code</button>
+        <button type="button" class="btn btn-ghost btn-block" onclick="closeFirmModal()" style="margin-top:8px;">Cancel</button>
+      </form>
+    </div>
+  </div>
 
   <!-- CTA Section -->
   <section class="section cta-section" id="cta">
@@ -294,5 +377,66 @@
   </footer>
 
   <script src="js/app.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    function openFirmModal(plan) {
+      document.getElementById('firm-plan').value = plan;
+      document.getElementById('firm-modal').style.display = 'flex';
+    }
+    function closeFirmModal() {
+      document.getElementById('firm-modal').style.display = 'none';
+    }
+
+    async function handleCreateFirm(e) {
+      e.preventDefault();
+      const btn = document.getElementById('firm-submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Creating...';
+
+      const apiBase = (window.location.origin.startsWith('file') || window.location.hostname === 'localhost') 
+        ? 'http://127.0.0.1:5000' 
+        : window.location.origin;
+
+      try {
+        const resp = await fetch(apiBase + '/api/firm/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firmName: document.getElementById('firm-name').value,
+            name: document.getElementById('firm-admin-name').value,
+            email: document.getElementById('firm-email').value,
+            password: document.getElementById('firm-password').value,
+            plan: document.getElementById('firm-plan').value
+          })
+        });
+
+        const res = await resp.json();
+        if (!resp.ok) throw new Error(res.error || 'Failed to create firm');
+
+        // Save login state
+        localStorage.setItem('pl_token', res.token);
+        localStorage.setItem('pl_user', JSON.stringify(res.user));
+
+        // Show success with invite code
+        const modalContent = document.querySelector('#firm-modal > div');
+        modalContent.innerHTML = `
+          <div style="text-align:center;">
+            <div style="font-size:3rem;margin-bottom:16px;">✅</div>
+            <h2 style="margin-bottom:8px;">Firm Created!</h2>
+            <p style="color:var(--text-muted);margin-bottom:24px;">Share this invite code with your team members:</p>
+            <div style="background:var(--bg);padding:20px;border-radius:12px;border:2px dashed var(--primary);margin-bottom:24px;">
+              <p style="font-size:2rem;font-weight:800;letter-spacing:4px;color:var(--primary);">${res.user.inviteCode}</p>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:24px;">Your team members enter this code when registering as a Lawyer to automatically join <strong>${res.user.firmName}</strong>.</p>
+            <button class="btn btn-primary btn-block btn-lg" onclick="window.location.href='firm_dashboard.html'">Go to Firm Dashboard →</button>
+          </div>
+        `;
+      } catch (err) {
+        alert(err.message || 'Failed to create firm');
+        btn.disabled = false;
+        btn.textContent = 'Create Firm & Get Invite Code';
+      }
+    }
+  </script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+import json
 from .prompts import chat, doc_analysis, analyze_case
 
 class PromptEngine:

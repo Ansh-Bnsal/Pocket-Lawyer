@@ -48,8 +48,9 @@ def init_db():
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
                 name            TEXT        NOT NULL,
                 slug            TEXT        UNIQUE,
-                subscription_tier TEXT      DEFAULT 'free',
+                subscription_tier TEXT      DEFAULT 'starter',
                 max_members     INTEGER     DEFAULT 5,
+                invite_code     TEXT        UNIQUE,
                 created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ''')
@@ -58,6 +59,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS users (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
                 firm_id         INTEGER     REFERENCES firms(id) ON DELETE SET NULL,
+                firm_role       TEXT,
                 name            TEXT        NOT NULL,
                 email           TEXT        UNIQUE NOT NULL,
                 password_hash   TEXT        NOT NULL,

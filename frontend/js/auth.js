@@ -1,9 +1,12 @@
 /* ============================================
    POCKET LAWYER 2.0 — Auth Page Logic
    Wired to real Flask JWT backend.
+   Zoom-style: Firms created from pricing page.
+   Lawyers can register as Private or Join a Firm.
    ============================================ */
 
 let selectedRole = 'client';
+let selectedPracticeMode = 'private';
 
 function showAuthTab(tab) {
   const loginForm = document.getElementById('login-form');
@@ -26,11 +29,18 @@ function showAuthTab(tab) {
 
 function selectRole(role) {
   selectedRole = role;
-  document.querySelectorAll('.role-option').forEach(el => {
+  document.querySelectorAll('#role-selector .role-option').forEach(el => {
     el.classList.toggle('selected', el.dataset.role === role);
   });
   document.getElementById('lawyer-fields').style.display = role === 'lawyer' ? 'block' : 'none';
-  document.getElementById('firm-fields').style.display = role === 'firm' ? 'block' : 'none';
+}
+
+function selectPracticeMode(mode) {
+  selectedPracticeMode = mode;
+  document.querySelectorAll('#practice-selector .role-option').forEach(el => {
+    el.classList.toggle('selected', el.dataset.mode === mode);
+  });
+  document.getElementById('invite-code-field').style.display = mode === 'firm' ? 'block' : 'none';
 }
 
 async function handleLogin(e) {
@@ -45,7 +55,7 @@ async function handleLogin(e) {
   try {
     const data = await API.login(email, password);
     Utils.showToast('Welcome back, ' + data.user.name + '!', 'success');
-    setTimeout(() => redirectToDashboard(data.user.role), 800);
+    setTimeout(() => redirectToDashboard(data.user), 800);
   } catch (err) {
     Utils.showToast(err.message, 'error');
     btn.disabled = false;
@@ -70,15 +80,27 @@ async function handleRegister(e) {
     userData.specialization = document.getElementById('reg-specialization').value;
     userData.experience = document.getElementById('reg-experience').value;
     userData.barNumber = document.getElementById('reg-bar-number').value;
-  } else if (selectedRole === 'firm') {
-    userData.firmName = document.getElementById('reg-firm-name').value;
-    userData.firmSize = document.getElementById('reg-firm-size').value;
+
+    // If joining a firm, include invite code
+    if (selectedPracticeMode === 'firm') {
+      const inviteCode = document.getElementById('reg-invite-code').value.trim();
+      if (!inviteCode) {
+        Utils.showToast('Please enter your firm invite code', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+        return;
+      }
+      userData.inviteCode = inviteCode;
+    }
   }
 
   try {
     const data = await API.register(userData);
-    Utils.showToast('Account created! Welcome, ' + data.user.name + '!', 'success');
-    setTimeout(() => redirectToDashboard(data.user.role), 800);
+    const welcomeMsg = data.user.firmName 
+      ? `Welcome to ${data.user.firmName}, ${data.user.name}!`
+      : `Account created! Welcome, ${data.user.name}!`;
+    Utils.showToast(welcomeMsg, 'success');
+    setTimeout(() => redirectToDashboard(data.user), 800);
   } catch (err) {
     Utils.showToast(err.message, 'error');
     btn.disabled = false;
@@ -86,10 +108,15 @@ async function handleRegister(e) {
   }
 }
 
-function redirectToDashboard(role) {
-  if (role === 'lawyer') window.location.href = 'lawyer_dashboard.html';
-  else if (role === 'firm') window.location.href = 'firm_dashboard.html';
-  else window.location.href = 'dashboard.html';
+function redirectToDashboard(user) {
+  // Smart routing based on role and firm membership
+  if (user.role === 'firm' || (user.role === 'lawyer' && user.firmRole === 'admin')) {
+    window.location.href = 'firm_dashboard.html';
+  } else if (user.role === 'lawyer') {
+    window.location.href = 'lawyer_dashboard.html';
+  } else {
+    window.location.href = 'dashboard.html';
+  }
 }
 
 // Nav toggle
@@ -99,7 +126,7 @@ document.getElementById('nav-toggle')?.addEventListener('click', () => {
 
 // If already logged in, redirect
 if (API.isLoggedIn()) {
-  redirectToDashboard(API.getUser().role);
+  redirectToDashboard(API.getUser());
 }
 
 // Check hash for register tab

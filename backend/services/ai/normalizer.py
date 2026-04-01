@@ -70,16 +70,57 @@ class Normalizer:
 
     @staticmethod
     def _format_doc_analysis(data):
-        text = f"### {data.get('documentType', 'Document Analysis').upper()}\n\n"
-        text += f"**Verdict:** {data.get('verdict', 'Needs Lawyer Review')}\n"
-        text += f"**Risk Level:** {data.get('overallRisk', 'MEDIUM')}\n\n"
-        text += f"**Simplified Summary:** {data.get('simplifiedExplanation', '')}\n\n"
+        severity_icons = {"HIGH": "🔴", "MEDIUM": "🟠", "LOW": "🟡"}
+        
+        # 1. SIMPLIFIED EXPLANATION
+        text = f"📝 **SIMPLIFIED EXPLANATION:**\n{data.get('simplifiedExplanation', '')}\n\n"
+        
+        # 2. USER RIGHTS (with Sections)
+        rights = data.get('userRights', [])
+        if rights:
+            text += "⚖️ **YOUR RIGHTS:**\n"
+            for r in rights:
+                text += f"• **{r.get('section', '')}:** {r.get('right', '')}\n"
+            text += "\n"
+        
+        # 3. CATEGORY
+        category = data.get('category', '')
+        if category:
+            text += f"📂 **CATEGORY:** {category}\n\n"
+        
+        # 4. HARMFUL CLAUSES (3-Tier Severity)
         clauses = data.get('harmfulClauses', [])
         if clauses:
-            text += "🚩 **HARMFUL CLAUSES DETECTED**\n"
+            text += f"⚠️ **{len(clauses)} RISKS DETECTED IN CLAUSES:**\n"
             for c in clauses:
-                text += f"\n- **[{c.get('severity', 'HIGH')}]** *\"{c.get('originalQuote', '')}\"*\n"
+                sev = c.get('severity', 'MEDIUM').upper()
+                icon = severity_icons.get(sev, "🟠")
+                clause_num = c.get('clauseNumber', '')
+                simplification = c.get('simplification', c.get('explanation', ''))
+                text += f"{icon} **{sev} Risk:** {clause_num} ({simplification})\n"
+            
+            text += "\n"
+            # Detailed breakdown
+            for c in clauses:
+                sev = c.get('severity', 'MEDIUM').upper()
+                icon = severity_icons.get(sev, "🟠")
+                text += f"\n{icon} **[{sev}] {c.get('clauseNumber', '')}**\n"
+                text += f"  *\"{c.get('originalQuote', '')}\"*\n"
+                text += f"  **Simplification:** {c.get('simplification', '')}\n"
                 text += f"  **Risk:** {c.get('explanation', '')}\n"
                 text += f"  **Consequence:** {c.get('consequence', '')}\n"
                 text += f"  **Suggested Fix:** {c.get('suggestedFix', '')}\n"
+        
+        # 5. NEXT STEPS
+        next_steps = data.get('nextSteps', '')
+        if next_steps:
+            text += f"\n**NEXT STEPS:**\n{next_steps}\n"
+        
+        # 6. VERDICT
+        verdict = data.get('verdict', '')
+        risk = data.get('overallRisk', '')
+        if verdict:
+            verdict_icon = {"SAFE_TO_SIGN": "✅", "PROCEED_WITH_CAUTION": "⚠️", "DO_NOT_SIGN": "🛑"}.get(verdict, "⚠️")
+            text += f"\n{verdict_icon} **VERDICT:** {verdict.replace('_', ' ')} (Overall Risk: {risk})\n"
+        
         return text

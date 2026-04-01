@@ -569,18 +569,39 @@
 
 .chat-input-wrap {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-end;
   max-width: 800px;
   margin: 0 auto;
 }
 
-.chat-input {
+.chat-attach-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 10px 4px;
+  color: var(--text-muted);
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.chat-attach-btn:hover { color: var(--primary); transform: scale(1.15); }
+
+.chat-composer {
   flex: 1;
-  padding: 14px 18px;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+.chat-composer:focus-within { border-color: var(--primary); }
+
+.chat-input {
+  width: 100%;
+  padding: 14px 18px;
+  background: transparent;
+  border: none;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 0.95rem;
@@ -590,7 +611,33 @@
   max-height: 120px;
 }
 
-.chat-input:focus { border-color: var(--primary); }
+/* File chip — sits inside the composer, above the textarea */
+.chat-file-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 8px 10px 0;
+  background: var(--primary-glow);
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: var(--radius-sm);
+  animation: fadeInDown 0.2s ease;
+  width: fit-content;
+}
+.chip-icon { font-size: 1rem; }
+.chip-name { font-size: 0.82rem; font-weight: 600; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip-size { font-size: 0.72rem; color: var(--text-muted); }
+.chip-remove {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 0.85rem; padding: 0 2px;
+  transition: color var(--transition);
+}
+.chip-remove:hover { color: var(--danger); }
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 .chat-send-btn {
   width: 48px; height: 48px;

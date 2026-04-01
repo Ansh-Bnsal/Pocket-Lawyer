@@ -79,10 +79,6 @@
             <span class="role-icon">⚖️</span>
             <span class="role-name">Lawyer</span>
           </button>
-          <button type="button" class="role-option" data-role="firm" onclick="selectRole('firm')">
-            <span class="role-icon">🏢</span>
-            <span class="role-name">Law Firm</span>
-          </button>
         </div>
 
         <div class="form-group">
@@ -126,23 +122,27 @@
             <label class="form-label" for="reg-bar-number">Bar Council Number</label>
             <input type="text" id="reg-bar-number" class="form-input" placeholder="Enter bar council registration number">
           </div>
-        </div>
 
-        <!-- Firm-specific fields -->
-        <div id="firm-fields" style="display:none;">
-          <div class="form-group">
-            <label class="form-label" for="reg-firm-name">Firm Name</label>
-            <input type="text" id="reg-firm-name" class="form-input" placeholder="Enter firm name">
+          <!-- Practice Mode Toggle -->
+          <label class="form-label">How will you practice?</label>
+          <div class="role-selector" id="practice-selector">
+            <button type="button" class="role-option selected" data-mode="private" onclick="selectPracticeMode('private')">
+              <span class="role-icon">👤</span>
+              <span class="role-name">Private</span>
+            </button>
+            <button type="button" class="role-option" data-mode="firm" onclick="selectPracticeMode('firm')">
+              <span class="role-icon">🏢</span>
+              <span class="role-name">Join a Firm</span>
+            </button>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="reg-firm-size">Team Size</label>
-            <select id="reg-firm-size" class="form-select">
-              <option value="">Select team size</option>
-              <option value="1-5">1-5 Lawyers</option>
-              <option value="6-20">6-20 Lawyers</option>
-              <option value="21-50">21-50 Lawyers</option>
-              <option value="50+">50+ Lawyers</option>
-            </select>
+
+          <!-- Invite Code (shown when "Join a Firm" selected) -->
+          <div id="invite-code-field" style="display:none;">
+            <div class="form-group">
+              <label class="form-label" for="reg-invite-code">Firm Invite Code</label>
+              <input type="text" id="reg-invite-code" class="form-input" placeholder="e.g., FIRM-K9X2AB" style="text-transform:uppercase;letter-spacing:2px;font-weight:600;">
+              <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Get this code from your firm's admin.</p>
+            </div>
           </div>
         </div>
 

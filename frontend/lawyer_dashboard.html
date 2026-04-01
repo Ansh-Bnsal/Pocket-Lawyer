@@ -28,16 +28,35 @@
 
   <div class="dashboard-layout">
     <aside class="dashboard-sidebar" id="sidebar">
+      <!-- Firm/Private Mode Toggle (shown only for firm members) -->
+      <div class="sidebar-section" id="mode-toggle-section" style="display:none;">
+        <div class="sidebar-label">Practice Mode</div>
+        <a href="#" class="sidebar-link active" id="mode-private-btn" onclick="switchMode('private')">
+          <span class="link-icon">👤</span> Private Practice
+        </a>
+        <a href="#" class="sidebar-link" id="mode-firm-btn" onclick="switchMode('firm')">
+          <span class="link-icon">🏢</span> <span id="firm-name-label">Firm</span>
+        </a>
+      </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Lawyer Panel</div>
         <a href="lawyer_dashboard.html" class="sidebar-link active"><span class="link-icon">📊</span> Overview</a>
         <a href="case.html" class="sidebar-link"><span class="link-icon">🧠</span> AI Assistant</a>
       </div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">Assigned Cases</div>
+      <div class="sidebar-section" id="cases-sidebar">
+        <div class="sidebar-label" id="cases-sidebar-label">My Cases</div>
         <a href="#" class="sidebar-link" onclick="filterCases('all')"><span class="link-icon">📋</span> All Cases <span class="link-badge" id="total-badge">0</span></a>
         <a href="#" class="sidebar-link" onclick="filterCases('active')"><span class="link-icon">🟢</span> Active</a>
         <a href="#" class="sidebar-link" onclick="filterCases('pending')"><span class="link-icon">🟡</span> Pending</a>
+        <!-- Firm Cases tab (shown in firm mode) -->
+        <a href="#" class="sidebar-link" id="firm-cases-link" style="display:none;" onclick="showFirmCases()">
+          <span class="link-icon">🏢</span> All Firm Cases <span class="link-badge" id="firm-cases-badge">0</span>
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">AI Research Tools</div>
+        <a href="#ai-tools" class="sidebar-link" onclick="scrollToTools()"><span class="link-icon">🔍</span> Precedent Search</a>
+        <a href="#ai-tools" class="sidebar-link" onclick="scrollToTools()"><span class="link-icon">📚</span> Case Law AI</a>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Account</div>
@@ -61,7 +80,46 @@
         <div class="case-detail-header" id="profile-card"></div>
       </div>
 
-      <h2 style="font-size:1.3rem;margin-bottom:16px;" id="cases-title">Assigned Cases</h2>
+      <!-- AI Research Tools (Placeholder — TODO: Wire to ai.ask("precedent_search")) -->
+      <div id="ai-tools" style="margin-bottom:32px;">
+        <h2 style="font-size:1.3rem;margin-bottom:16px;">🔬 AI Research Tools</h2>
+        <div class="stats-grid">
+          <div class="stat-card" style="cursor:pointer;opacity:0.6;" onclick="Utils.showToast('Precedent Search coming soon — will use ai.ask(precedent_search)', 'info')">
+            <div class="stat-card-icon blue">🔍</div>
+            <h3 style="font-size:1.1rem;">Precedent Search</h3>
+            <p>Find relevant Indian court rulings for any case using AI</p>
+            <span class="badge badge-neutral" style="margin-top:8px;">Coming Soon</span>
+          </div>
+          <div class="stat-card" style="cursor:pointer;opacity:0.6;" onclick="Utils.showToast('Case Law AI coming soon', 'info')">
+            <div class="stat-card-icon purple">📚</div>
+            <h3 style="font-size:1.1rem;">Case Law AI</h3>
+            <p>AI-powered legal research across Acts, Sections & Amendments</p>
+            <span class="badge badge-neutral" style="margin-top:8px;">Coming Soon</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Join a Firm card (for private lawyers without a firm) -->
+      <div id="join-firm-card" style="display:none;background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(168,85,247,0.1));border:1px solid rgba(99,102,241,0.25);border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <h3 style="font-size:1.1rem;margin-bottom:4px;">🏢 Join a Law Firm</h3>
+            <p style="font-size:0.85rem;color:var(--text-muted);">Enter an invite code from your firm's admin to collaborate on shared cases.</p>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="join-code-input" class="form-input" placeholder="FIRM-XXXXXX" style="width:160px;text-transform:uppercase;letter-spacing:2px;font-weight:600;">
+            <button class="btn btn-primary btn-sm" onclick="handleJoinFirm()">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Firm Cases List (shown in firm mode) -->
+      <div id="firm-cases-section" style="display:none;">
+        <h2 style="font-size:1.3rem;margin-bottom:16px;">🏢 All Firm Cases</h2>
+        <div id="firm-case-list" class="case-list"></div>
+      </div>
+
+      <h2 style="font-size:1.3rem;margin-bottom:16px;" id="cases-title">My Cases</h2>
       <div id="case-list" class="case-list"></div>
     </main>
   </div>
@@ -74,7 +132,9 @@
     document.getElementById('nav-toggle')?.addEventListener('click', () => document.getElementById('nav-links')?.classList.toggle('open'));
 
     let currentFilter = 'all';
+    let currentMode = 'private';
     let allCases = [];
+    let firmCases = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!Utils.requireAuth()) return;
@@ -84,19 +144,100 @@
       document.getElementById('user-greeting').textContent = '⚖️ ' + user.name;
       document.getElementById('welcome-msg').textContent = 'Welcome, ' + user.name.split(' ')[0];
 
+      // Show firm mode toggle if user is a firm member
+      if (user.firmId) {
+        document.getElementById('mode-toggle-section').style.display = 'block';
+        document.getElementById('firm-name-label').textContent = user.firmName || 'Firm';
+        document.getElementById('join-firm-card').style.display = 'none';
+        // Load firm cases
+        try { firmCases = await API._fetch('/firm/cases'); } catch(e) { firmCases = []; }
+        document.getElementById('firm-cases-badge').textContent = firmCases.length;
+      } else {
+        // Show join firm card for private lawyers
+        document.getElementById('join-firm-card').style.display = 'block';
+      }
+
       try { allCases = await API.getCases(); } catch(e) { allCases = []; }
-      renderStats();
-      renderCases();
+      
+      // Initialize layout securely into private mode
+      switchMode('private');
     });
 
     function handleLogout() { API.logout(); }
 
+    function switchMode(mode) {
+      currentMode = mode;
+      document.getElementById('mode-private-btn').classList.toggle('active', mode === 'private');
+      document.getElementById('mode-firm-btn').classList.toggle('active', mode === 'firm');
+      if (mode === 'firm') {
+        document.getElementById('cases-sidebar-label').textContent = 'Firm Cases';
+        document.getElementById('cases-title').textContent = 'My Assigned Cases';
+        document.getElementById('firm-cases-link').style.display = 'block';
+      } else {
+        document.getElementById('cases-sidebar-label').textContent = 'My Cases';
+        document.getElementById('cases-title').textContent = 'My Cases';
+        document.getElementById('firm-cases-section').style.display = 'none';
+        document.getElementById('firm-cases-link').style.display = 'none';
+      }
+      renderStats();
+      renderCases();
+    }
+
+    function showFirmCases() {
+      const section = document.getElementById('firm-cases-section');
+      section.style.display = section.style.display === 'none' ? 'block' : 'none';
+      const el = document.getElementById('firm-case-list');
+      if (firmCases.length === 0) {
+        el.innerHTML = '<div class="empty-state"><div class="empty-icon">🏢</div><h3>No firm cases yet</h3></div>';
+        return;
+      }
+      el.innerHTML = firmCases.map(c => `
+        <div class="case-item" style="cursor:default;">
+          <span class="case-status-dot ${c.status}"></span>
+          <div class="case-info">
+            <h4>${Utils.escapeHtml(c.title)}</h4>
+            <p>${c.case_type || 'General'} · Assigned to: <strong>${Utils.escapeHtml(c.assigned_to || 'Unassigned')}</strong></p>
+          </div>
+          <span class="badge badge-${Utils.statusColors[c.status] || 'neutral'}">${c.status}</span>
+        </div>
+      `).join('');
+    }
+
+    async function handleJoinFirm() {
+      const code = document.getElementById('join-code-input').value.trim();
+      if (!code) { Utils.showToast('Please enter an invite code', 'error'); return; }
+      try {
+        const res = await API._fetch('/firm/join', {
+          method: 'POST',
+          body: JSON.stringify({ inviteCode: code })
+        });
+        // Update local user data
+        const user = API.getUser();
+        user.firmId = res.firmId;
+        user.firmName = res.firmName;
+        user.firmRole = res.firmRole;
+        localStorage.setItem('pl_user', JSON.stringify(user));
+        Utils.showToast(res.message, 'success');
+        setTimeout(() => location.reload(), 1000);
+      } catch (e) {
+        Utils.showToast(e.message || 'Failed to join firm', 'error');
+      }
+    }
+
     function renderStats() {
-      const cases = allCases;
+      let cases = [...allCases];
+      
+      // Strict segregation: Private mode hides all firm property bounds
+      if (currentMode === 'private') {
+        cases = cases.filter(c => !c.firm_id);
+      } else if (currentMode === 'firm') {
+        cases = cases.filter(c => !!c.firm_id);
+      }
+
       const active = cases.filter(c => c.status === 'active').length;
 
       document.getElementById('stats-grid').innerHTML = `
-        <div class="stat-card"><div class="stat-card-icon blue">📋</div><h3>${cases.length}</h3><p>Assigned Cases</p></div>
+        <div class="stat-card"><div class="stat-card-icon blue">📋</div><h3>${cases.length}</h3><p>My Cases</p></div>
         <div class="stat-card"><div class="stat-card-icon green">🟢</div><h3>${active}</h3><p>Active Cases</p></div>
         <div class="stat-card"><div class="stat-card-icon amber">📅</div><h3>0</h3><p>Hearings</p></div>
         <div class="stat-card"><div class="stat-card-icon purple">📂</div><h3>0</h3><p>Documents</p></div>
@@ -107,12 +248,20 @@
     function renderCases(filter) {
       filter = filter || currentFilter;
       let cases = [...allCases];
+      
+      // Strict segregation: Private mode hides all firm property bounds
+      if (currentMode === 'private') {
+        cases = cases.filter(c => !c.firm_id);
+      } else if (currentMode === 'firm') {
+        cases = cases.filter(c => !!c.firm_id);
+      }
+
       if (filter !== 'all') cases = cases.filter(c => c.status === filter);
       cases.sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
 
       const el = document.getElementById('case-list');
       if (cases.length === 0) {
-        el.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h3>No assigned cases</h3><p>Cases will appear here when clients assign you.</p></div>`;
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h3>No cases yet</h3><p>Cases will appear here when assigned to you.</p></div>`;
         return;
       }
 
@@ -132,11 +281,13 @@
     }
 
     function filterCases(f) { currentFilter = f; renderCases(f); }
+    function scrollToTools() { document.getElementById('ai-tools')?.scrollIntoView({ behavior: 'smooth' }); }
 
     function showProfile() {
       const user = API.getUser();
       const section = document.getElementById('profile-section');
       section.style.display = section.style.display === 'none' ? 'block' : 'none';
+      const firmBadge = user.firmId ? `<div class="meta-item">🏢 ${Utils.escapeHtml(user.firmName || '')} (${user.firmRole})</div>` : '';
       document.getElementById('profile-card').innerHTML = `
         <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;">
           <div class="lawyer-avatar" style="width:64px;height:64px;font-size:1.5rem;">${Utils.getInitials(user.name)}</div>
@@ -148,6 +299,7 @@
         <div class="case-detail-meta">
           <div class="meta-item">📧 ${Utils.escapeHtml(user.email)}</div>
           <div class="meta-item">📋 Bar: ${Utils.escapeHtml(user.barNumber || 'Not provided')}</div>
+          ${firmBadge}
         </div>
       `;
     }

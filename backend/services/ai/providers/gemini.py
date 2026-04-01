@@ -16,8 +16,8 @@ class GeminiProvider(BaseProvider):
         if not api_key:
             raise ValueError("GEMINI_API_KEY is not configured.")
 
-        # Default to Gemini 2.0 Flash (Fastest, Best for Multimodal)
-        model_name = model if model else "gemini-2.0-flash"
+        # Default to Gemini 2.5 Flash (Bypasses 2.0-flash quota exhaustion)
+        model_name = model if model else "gemini-2.5-flash"
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
 
         # 🧩 BUILD MULTIMODAL PAYLOAD
