@@ -8,7 +8,7 @@ from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
 from database import get_db
 from services.file_service import extract_text, allowed_file
-from services.ai_service import analyze_document
+from services.ai import ai
 from routes.auth_routes import require_auth
 
 upload_bp = Blueprint('upload', __name__)
@@ -50,9 +50,9 @@ def upload_file():
     risk_analysis = None
     if extracted_text and not extracted_text.startswith('['):
         try:
-            ai_result = analyze_document(extracted_text)
-            ai_summary = ai_result.get('simplifiedExplanation', '')
-            risk_analysis = ai_result
+            result = ai.ask("doc_analysis", extracted_text)
+            ai_summary = result.text # Clean, formatted text
+            risk_analysis = result.data # Normalized dict
         except Exception as e:
             ai_summary = f'[AI analysis failed: {str(e)}]'
             risk_analysis = {'error': str(e)}

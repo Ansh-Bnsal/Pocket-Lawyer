@@ -27,6 +27,11 @@ OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 # Anthropic (alternative)
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 
+# Melento / SignDesk (LegalDesk) Services
+# Get your API keys at https://signdesk.com/ or https://melento.ai/
+MELENTO_CLIENT_ID = os.environ.get('MELENTO_CLIENT_ID', '')
+MELENTO_API_KEY = os.environ.get('MELENTO_API_KEY', '')
+
 # ── File Uploads ──────────────────────────────────────────────────────────────
 UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', os.path.join(os.path.dirname(__file__), 'uploads'))
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB file limit

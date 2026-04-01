@@ -12,81 +12,109 @@
   <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-  <nav class="navbar scrolled"><div class="nav-container">
-    <a href="index.html" class="nav-logo"><span class="logo-icon">⚖️</span><span class="logo-text">Pocket<span class="logo-accent">Lawyer</span></span></a>
-    <div class="nav-links" id="nav-links">
-      <a href="index.html" class="nav-link">Home</a>
-      <a href="dashboard.html" class="nav-link">Dashboard</a>
-      <a href="case.html" class="nav-link active">AI Assistant</a>
+  <nav class="navbar scrolled">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">⚖️</span>
+        <span class="logo-text">Pocket<span class="logo-accent">Lawyer</span></span>
+      </a>
+      <div class="nav-actions">
+        <span class="btn btn-ghost" id="user-greeting"></span>
+        <a href="#" class="btn btn-ghost btn-sm" onclick="API.logout()">Logout</a>
+      </div>
     </div>
-    <div class="nav-actions">
-      <a href="login.html" class="btn btn-ghost btn-sm" id="nav-auth-btn">Sign In</a>
-    </div>
-    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
-  </div></nav>
+  </nav>
 
-  <div class="chat-layout">
-    <!-- Sidebar: Conversations -->
-    <aside class="chat-sidebar" id="chat-sidebar">
-      <button class="btn btn-primary btn-block" onclick="newConversation()">➕ New Chat</button>
-      <div class="conv-list" id="conv-list"></div>
+  <div class="dashboard-layout">
+    <!-- Master Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Main</div>
+        <a href="dashboard.html" class="sidebar-link">
+          <span class="link-icon">📊</span> Overview
+        </a>
+        <a href="case.html" class="sidebar-link active">
+          <span class="link-icon">🧠</span> AI Copilot
+        </a>
+        <a href="legal_services.html" class="sidebar-link">
+          <span class="link-icon">🛡️</span> Legal Services
+        </a>
+      </div>
+      
+      <div class="sidebar-section">
+        <div class="sidebar-label">My Records</div>
+        <a href="vault.html" class="sidebar-link">
+          <span class="link-icon">📂</span> Digital Vault
+        </a>
+        <a href="discovery.html" class="sidebar-link">
+          <span class="link-icon">🔍</span> Find a Lawyer
+        </a>
+      </div>
     </aside>
 
-    <!-- Chat Area -->
-    <div class="chat-main">
-      <div class="chat-header">
-        <div>
-          <h3 style="font-size:1.1rem;">🧠 AI Legal Assistant</h3>
-          <p style="font-size:0.8rem;color:var(--text-muted);">Describe your legal issue to get structured guidance</p>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="toggleChatSidebar()" style="display:none;" id="sidebar-toggle-btn">📋 History</button>
-      </div>
+    <main class="dashboard-main" style="padding:0; height:calc(100vh - 70px); overflow:hidden;">
+      <div class="chat-layout" style="height:100%;">
+        <!-- Sidebar: Conversations -->
+        <aside class="chat-sidebar" id="chat-sidebar">
+          <button class="btn btn-primary btn-block" onclick="newConversation()">➕ New Chat</button>
+          <div class="conv-list" id="conv-list"></div>
+        </aside>
 
-      <div class="chat-disclaimer">
-        ⚠️ AI provides legal information and structuring assistance, not legal advice or judgment. Always consult a qualified lawyer for legal decisions.
-      </div>
+        <!-- Chat Area -->
+        <div class="chat-main">
+          <div class="chat-header">
+            <div>
+              <h3 style="font-size:1.1rem;">🧠 AI Legal Assistant</h3>
+              <p style="font-size:0.8rem;color:var(--text-muted);">Describe your legal issue to get structured guidance</p>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="toggleChatSidebar()" id="sidebar-toggle-btn">📋 History</button>
+          </div>
 
-      <div class="chat-messages" id="chat-messages">
-        <div class="chat-message ai">
-          <div class="chat-avatar">🧠</div>
-          <div class="chat-bubble">
-            <strong>Welcome to AI Legal Assistant!</strong><br><br>
-            I can help you:<br>
-            • <strong>Understand</strong> your legal situation<br>
-            • <strong>Classify</strong> your case type<br>
-            • <strong>Identify</strong> key facts and risks<br>
-            • <strong>Structure</strong> your case for better management<br><br>
-            Tell me about your legal issue, and I'll help you organize it into a structured case profile.
+          <div class="chat-disclaimer">
+            ⚠️ AI provides legal information and structuring assistance, not legal advice.
+          </div>
+
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-message ai">
+              <div class="chat-avatar">🧠</div>
+              <div class="chat-bubble">
+                <strong>Welcome to AI Legal Assistant!</strong><br><br>
+                Tell me about your legal issue, and I'll help you organize it into a structured case profile.
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-input-area">
+            <div id="chat-file-preview" class="chat-file-preview" style="display: none;">
+              <span class="file-icon">📄</span>
+              <span id="selected-filename">filename.pdf</span>
+              <button class="remove-file" onclick="clearFile()">×</button>
+            </div>
+            <div class="chat-input-wrap">
+              <input type="file" id="chat-file-input" style="display: none;" onchange="handleFileSelect(event)">
+              <button class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="Attach Document (PDF/Image)">📎</button>
+              <textarea class="chat-input" id="chat-input" placeholder="Describe your issue or attach a document..." rows="1" onkeydown="handleChatKeydown(event)"></textarea>
+              <button class="chat-send-btn" onclick="sendMessage()" id="send-btn">➤</button>
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="chat-input-area">
-        <div class="chat-input-wrap">
-          <textarea class="chat-input" id="chat-input" placeholder="Describe your legal issue..." rows="1" onkeydown="handleChatKeydown(event)"></textarea>
-          <button class="chat-send-btn" onclick="sendMessage()" id="send-btn">➤</button>
-        </div>
-      </div>
-    </div>
+    </main>
   </div>
 
   <div id="toast-container" class="toast-container"></div>
 
   <script src="js/api.js"></script>
   <script src="js/utils.js"></script>
+  <script src="js/app_state.js"></script>
   <script src="js/chat.js"></script>
   <script>
-    document.getElementById('nav-toggle')?.addEventListener('click', () => {
-      document.getElementById('nav-links')?.classList.toggle('open');
-    });
-
-    // Update auth button
-    if (API.isLoggedIn()) {
-      const btn = document.getElementById('nav-auth-btn');
-      btn.textContent = '📊 Dashboard';
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!API.isLoggedIn()) window.location.href = 'login.html';
       const user = API.getUser();
-      btn.href = user.role === 'lawyer' ? 'lawyer_dashboard.html' : user.role === 'firm' ? 'firm_dashboard.html' : 'dashboard.html';
-    }
+      const greeting = document.getElementById('user-greeting');
+      if (greeting) greeting.innerText = `Hi, ${user.name}`;
+    });
 
     function toggleChatSidebar() {
       document.getElementById('chat-sidebar')?.classList.toggle('open');

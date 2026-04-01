@@ -176,6 +176,31 @@ def init_db():
         ''')
 
         cursor.execute('''
+            CREATE TABLE IF NOT EXISTS appointments (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                client_id       INTEGER     REFERENCES users(id) ON DELETE CASCADE,
+                lawyer_id       INTEGER     REFERENCES users(id) ON DELETE SET NULL,
+                case_id         INTEGER     REFERENCES cases(id) ON DELETE SET NULL,
+                scheduled_at    DATETIME    NOT NULL,
+                status          TEXT        DEFAULT 'pending',
+                notes           TEXT,
+                created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS service_logs (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id         INTEGER     REFERENCES users(id) ON DELETE CASCADE,
+                service_type    TEXT        NOT NULL,
+                external_id     TEXT,
+                status          TEXT        DEFAULT 'pending',
+                details         TEXT,
+                created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        cursor.execute('''
             CREATE TRIGGER IF NOT EXISTS cases_search_trigger 
             AFTER INSERT ON cases
             BEGIN

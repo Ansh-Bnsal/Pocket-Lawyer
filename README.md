@@ -89,5 +89,57 @@ pocket-lawyer-2.0/
 └── README.md
 ```
 
+## ⚖️ LegalDesk (SignDesk) Integration
+
+Pocket Lawyer 2.0 uses a **Production-Grade Modular Bridge** to handle complex legal workflows like e-Signing, e-Stamping, and e-KYC.
+
+### Architecture: The "Replaceable Proxy"
+To make development and demoing easy, we have separated the API logic from the main program:
+
+1.  **`backend/services/legal_desk_main.py`**: The **Main Orchestrator**. This handles the business logic (database, file saving, case tokens). You **never** need to change this file.
+2.  **`backend/services/legal_desk_proxy.py`**: The **Replaceable API Bridge**. 
+    *   **Current State**: Returns high-fidelity **Mock JSON** and simulated success messages. It handles both JSON data and **File Attachments**.
+    *   **To Go Live**: Simply replace the methods in this file with real `requests.post()` calls to the SignDesk/Melento production endpoints.
+
+### Mock Data & Testing
+When using the system in "Mock Mode" (default):
+- **eSign**: Accepts a signer name and a PDF attachment. Returns status `INITIATED` and a mock sandbox URL.
+- **eStamp**: Simulates a 4-hour TAT (Turnaround Time) for government processing after receiving the uploaded document.
+- **Drafting**: Uses the `legal_templates.py` library to generate professional 1,500+ word legal documents.
+
+### Switching to Production
+1.  Obtain your `CLIENT_ID` and `API_KEY` from [Melento.ai](https://melento.ai/) or [SignDesk.com](https://signdesk.com/).
+2.  Update your `backend/config.py` with these credentials.
+3.  Modify `legal_desk_proxy.py` to remove the mock return statements and implement the real fetch logic using the `requests` library.
+
+---
+
+## 🧪 Running a Perfect Demo
+
+To showcase the Legal Services Hub without real API keys, use the following **Mock Values** and **Test Documents**:
+
+### 1. Mock Test Documents
+We have provided professional-grade mock documents in the `/test_documents` folder. Use these when the system asks to "Attach Document":
+- `test_documents/sample_rent_agreement.pdf`
+- `test_documents/sample_affidavit.pdf`
+- `test_documents/sample_poa.pdf`
+
+### 2. Required Mock Inputs
+| Service | Field | Suggested Mock Value |
+| :--- | :--- | :--- |
+| **Aadhaar eSign** | Signer Name | `Ansh Bansal` |
+| | Aadhaar (Last 4) | `1234` |
+| **Digital Stamp** | State | `Delhi` |
+| | Stamp Value | `100` |
+| **Video KYC** | KYC Type | `Video KYC (VCIP)` |
+| | Mobile Number | `+91 98765 43210` |
+
+### 3. Resetting the Demo
+To clear all mock service logs and start fresh:
+1. Log out of the dashboard.
+2. (Optional) Run `rm backend/uploads/*` to clear uploaded documents.
+
+---
+
 ## 📜 License
 MIT License.

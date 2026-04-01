@@ -41,9 +41,23 @@
           <span class="link-icon">📊</span> Overview
         </a>
         <a href="case.html" class="sidebar-link">
-          <span class="link-icon">🧠</span> AI Assistant
+          <span class="link-icon">🧠</span> AI Copilot
+        </a>
+        <a href="legal_services.html" class="sidebar-link">
+          <span class="link-icon">🛡️</span> Legal Services
         </a>
       </div>
+      
+      <div class="sidebar-section">
+        <div class="sidebar-label">My Records</div>
+        <a href="vault.html" class="sidebar-link">
+          <span class="link-icon">📂</span> Digital Vault
+        </a>
+        <a href="discovery.html" class="sidebar-link">
+          <span class="link-icon">🔍</span> Find a Lawyer
+        </a>
+      </div>
+
       <div class="sidebar-section">
         <div class="sidebar-label">Cases</div>
         <a href="#" class="sidebar-link" onclick="filterCases('all')">
@@ -52,9 +66,6 @@
         </a>
         <a href="#" class="sidebar-link" onclick="filterCases('active')">
           <span class="link-icon">🟢</span> Active
-        </a>
-        <a href="#" class="sidebar-link" onclick="filterCases('pending')">
-          <span class="link-icon">🟡</span> Pending
         </a>
         <a href="#" class="sidebar-link" onclick="filterCases('closed')">
           <span class="link-icon">⚫</span> Closed
@@ -76,28 +87,36 @@
       <div class="dashboard-header">
         <div>
           <h1 id="welcome-msg">Dashboard</h1>
-          <p>Manage your legal cases and track progress</p>
+          <p>Access your cases, services, and legal actions through your centralized hub.</p>
         </div>
-        <button class="btn btn-primary" onclick="openCreateCase()">
-          <span>➕</span> New Case
-        </button>
-      </div>
-
-      <!-- Stats -->
-      <div class="stats-grid" id="stats-grid"></div>
-
-      <!-- Case List -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h2 id="case-list-title" style="font-size:1.3rem;">Your Cases</h2>
-        <div class="filter-group" id="case-filters">
-          <button class="filter-chip active" onclick="filterCases('all')">All</button>
-          <button class="filter-chip" onclick="filterCases('active')">Active</button>
-          <button class="filter-chip" onclick="filterCases('pending')">Pending</button>
-          <button class="filter-chip" onclick="filterCases('closed')">Closed</button>
+        <div style="display:flex; gap:12px;">
+            <a href="profile.html" class="btn btn-ghost btn-sm" style="height:fit-content;">⚙️ My Profile</a>
+            <button class="btn btn-primary" onclick="window.location.href='case.html'">
+                <span>➕</span> New Legal Inquiry
+            </button>
         </div>
       </div>
 
-      <div id="case-list" class="case-list"></div>
+      <!-- THE LEGAL CART (ACTIVE MATTER) -->
+      <div id="active-matter-container">
+        <!-- Will be populated by JS -->
+        <div class="card" style="padding:40px; text-align:center; border:1px dashed var(--border-color);">
+            <div style="font-size:3rem; margin-bottom:20px; opacity:0.5;">⚖️</div>
+            <h2 style="font-size:1.4rem; margin-bottom:12px;">No Active Legal Matter</h2>
+            <p style="color:var(--text-muted); max-width:400px; margin:0 auto 24px;">Start by describing your problem to our AI Copilot. We'll analyze your situation and guide you through the right actions.</p>
+            <button class="btn btn-primary" onclick="window.location.href='case.html'">Start AI Consultation</button>
+        </div>
+      </div>
+
+      <!-- RECENTLY COMPLETED / RECORDS -->
+      <div class="section-header" style="margin-top:40px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="font-size:1.1rem; margin:0;">🏆 Recently Completed</h2>
+        <a href="vault.html" style="font-size:0.85rem; color:var(--primary-light);">View My Records</a>
+      </div>
+      <div id="completed-services" class="case-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
+        <!-- Logic will populate -->
+      </div>
+    </main>
     </main>
   </div>
 
@@ -141,11 +160,115 @@
 
   <script src="js/api.js"></script>
   <script src="js/utils.js"></script>
-  <script src="js/case.js"></script>
+  <script src="js/app_state.js"></script>
   <script>
-    document.getElementById('nav-toggle')?.addEventListener('click', () => {
-      document.getElementById('nav-links')?.classList.toggle('open');
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!API.isLoggedIn()) window.location.href = 'login.html';
+      const user = API.getUser();
+      document.getElementById('user-greeting').innerText = `Hi, ${user.name}`;
+      document.getElementById('welcome-msg').innerText = `Welcome, ${user.name}`;
+      
+      renderDashboard();
+      window.addEventListener('cartUpdated', renderDashboard);
     });
+
+    function renderDashboard() {
+        const cart = AppState.getCart();
+        const matterContainer = document.getElementById('active-matter-container');
+        const completedContainer = document.getElementById('completed-services');
+
+        if (cart.active_case && cart.active_case.status === 'active') {
+            const pendingServices = cart.services.filter(s => s.status === 'pending');
+            matterContainer.innerHTML = `
+                <div class="card" style="padding:24px; border:1px solid var(--primary);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border-color);">
+                        <div>
+                            <span class="badge badge-primary" style="margin-bottom:8px;">ACTIVE MATTER</span>
+                            <h2 style="font-size:1.3rem; margin:0;">${cart.active_case.title}</h2>
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="archiveCase()">Archive Case</button>
+                    </div>
+                    <div style="margin-bottom:24px;">
+                        <h3 style="font-size:1rem; margin-bottom:16px; color:var(--text-secondary);">Suggested Action Items (Your Cart)</h3>
+                        <div id="cart-items-list" style="display:flex; flex-direction:column; gap:16px;">
+                            ${pendingServices.length > 0 ? pendingServices.map(s => `
+                                <div class="card" style="padding:16px; background:var(--bg-elevated); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="display:flex; align-items:center; gap:16px;">
+                                        <div style="font-size:1.5rem;">${getServiceIcon(s.service_key)}</div>
+                                        <div>
+                                            <h4 style="font-size:0.95rem; margin:0;">${formatServiceTitle(s)}</h4>
+                                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Added from AI Chat &bull; One-tap execution</p>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; gap:12px;">
+                                        <button class="btn btn-ghost btn-sm" onclick="removeService(${s.instance_id})">Remove</button>
+                                        <button class="btn btn-primary btn-sm" onclick="AppState.startWorkflow('${s.service_key}', ${s.instance_id})">Proceed to Checkout</button>
+                                    </div>
+                                </div>
+                            `).join('') : '<p style="color:var(--text-muted); padding:20px; text-align:center;">Your action list is empty. Ask AI for guidance.</p>'}
+                        </div>
+                    </div>
+                    ${pendingServices.length > 0 ? `
+                    <div style="background:var(--bg-elevated); padding:16px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.85rem; color:var(--text-muted);">${pendingServices.length} action item(s) ready for execution.</span>
+                        <button class="btn btn-primary" onclick="AppState.startWorkflow('${pendingServices[0].service_key}', ${pendingServices[0].instance_id})" style="box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);">🚀 Bulk Execute (Next Step)</button>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        } else {
+            matterContainer.innerHTML = `
+                <div class="card" style="padding:40px; text-align:center; border:1px dashed var(--border-color);">
+                    <div style="font-size:3rem; margin-bottom:20px; opacity:0.5;">⚖️</div>
+                    <h2 style="font-size:1.4rem; margin-bottom:12px;">No Active Legal Matter</h2>
+                    <p style="color:var(--text-muted); max-width:400px; margin:0 auto 24px;">Start by describing your problem to our AI Copilot. We'll analyze your situation and guide you through the right actions.</p>
+                    <button class="btn btn-primary" onclick="window.location.href='case.html'">Start AI Consultation</button>
+                </div>
+            `;
+        }
+
+        const completedServices = cart.services.filter(s => s.status === 'completed');
+        if (completedServices.length > 0) {
+            completedContainer.innerHTML = completedServices.map(s => `
+                <div class="card" style="padding:20px; background:var(--bg-surface); border:1px solid var(--border-color);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                        <span class="badge" style="background:rgba(34, 197, 94, 0.2); color:#22c55e;">COMPLETED</span>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">${new Date(s.updated_at || s.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <h4 style="font-size:0.95rem; margin-bottom:8px;">${formatServiceTitle(s)}</h4>
+                    <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:12px;" onclick="location.href='vault.html'">Download Files</button>
+                </div>
+            `).join('');
+        } else {
+            completedContainer.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem; grid-column:span 3;">No completed actions found.</p>';
+        }
+    }
+
+    function removeService(id) {
+        const cart = AppState.getCart();
+        cart.services = cart.services.filter(s => s.instance_id != id);
+        AppState.saveCart(cart);
+        Utils.showToast('Item removed from cart.', 'success');
+    }
+
+    function archiveCase() {
+        const cart = AppState.getCart();
+        cart.active_case.status = 'closed';
+        AppState.saveCart(cart);
+        Utils.showToast('Case archived.', 'success');
+    }
+
+    function formatServiceTitle(s) {
+        let name = s.service_key.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        if (s.data && s.data.opposite_party) return `${name} to ${s.data.opposite_party}`;
+        return name;
+    }
+
+    function getServiceIcon(key) {
+        const icons = { 'legal_notice': '📜', 'lawyer_consult': '🤝', 'document_draft': '📄', 'complaint_filing': '🛡️' };
+        return icons[key] || '📋';
+    }
+    function handleLogout() { API.logout(); }
   </script>
 </body>
 </html>

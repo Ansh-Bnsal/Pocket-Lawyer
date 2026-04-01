@@ -163,5 +163,45 @@ const API = {
 
   async getDocumentRisks(docId) {
     return this.get(`/documents/${docId}/risks`);
+  },
+
+  // ── Legal Services & Appointments ──────────────────────────
+
+  async getAppointments() {
+    return this.get('/appointments');
+  },
+
+  async bookAppointment(lawyerId, dateTime, notes = '', caseId = null) {
+    return this.post('/appointments/book', { lawyerId, dateTime, notes, caseId });
+  },
+
+  async listLegalServices() {
+    return this.get('/services/list');
+  },
+
+  async requestEsign(formData) {
+    // Expects FormData with signerName, aadhaarLast4, document (file)
+    return this.postForm('/services/esign', formData);
+  },
+
+  async requestEstamp(formData) {
+    // Expects FormData with state, value, firstParty, secondParty, document (file)
+    return this.postForm('/services/estamp', formData);
+  },
+
+  async requestKyc(kycType = 'video') {
+    return this.post('/services/kyc', { kyc_type: kycType });
+  },
+
+  async requestDraft(template, data) {
+    return this.post('/services/draft', { template, data });
+  },
+
+  async getServiceLogs() {
+    return this.get('/services/logs');
+  },
+
+  getDownloadUrl(filename) {
+    return `${API_BASE}/services/download/${filename}?token=${this._token}`;
   }
 };

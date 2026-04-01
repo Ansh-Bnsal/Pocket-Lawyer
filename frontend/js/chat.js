@@ -1,155 +1,191 @@
 /* ============================================
-   POCKET LAWYER 2.0 — AI Chat Logic
-   Real AI responses via Flask API. No fake keyword matching.
+   POCKET LAWYER 2.0 — AI Chat Logic (Refactored)
+   Updated with Decoupled AI Gateway & Multimodal Support
    ============================================ */
 
 let activeSessionId = null;
+let selectedFile = null;
 
-document.addEventListener('DOMContentLoaded', async () => {
-  autoResizeInput();
-  await loadSessions();
-
-  // Update auth button
-  if (API.isLoggedIn()) {
-    const btn = document.getElementById('nav-auth-btn');
-    if (btn) {
-      btn.textContent = '📊 Dashboard';
-      const user = API.getUser();
-      btn.href = user.role === 'lawyer' ? 'lawyer_dashboard.html' : user.role === 'firm' ? 'firm_dashboard.html' : 'dashboard.html';
+document.addEventListener('DOMContentLoaded', () => {
+    autoResizeInput();
+    loadSessions(); // Load session history instead of just local mock history
+    
+    if (API.isLoggedIn()) {
+        const user = API.getUser();
+        const greet = document.getElementById('user-greeting');
+        if (greet) greet.innerText = `Hi, ${user.name}`;
     }
-  }
 });
 
 function autoResizeInput() {
-  const input = document.getElementById('chat-input');
-  if (!input) return;
-  input.addEventListener('input', () => {
-    input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-  });
+    const input = document.getElementById('chat-input');
+    if (!input) return;
+    input.addEventListener('input', () => {
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    });
 }
 
 function handleChatKeydown(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+}
+
+// 📎 MULTIMODAL FILE HANDLING
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    selectedFile = file;
+    const preview = document.getElementById('chat-file-preview');
+    const filename = document.getElementById('selected-filename');
+    
+    filename.innerText = file.name;
+    preview.style.display = 'flex';
+}
+
+function clearFile() {
+    selectedFile = null;
+    document.getElementById('chat-file-input').value = '';
+    document.getElementById('chat-file-preview').style.display = 'none';
 }
 
 async function loadSessions() {
-  const list = document.getElementById('conv-list');
-  if (!list) return;
-
-  if (!API.isLoggedIn()) {
-    list.innerHTML = '<p style="color:var(--text-muted);font-size:0.82rem;padding:12px;text-align:center;">Sign in to save your conversations.</p>';
-    return;
-  }
-
-  try {
-    const sessions = await API.getChatSessions();
-    if (sessions.length === 0) {
-      list.innerHTML = '<p style="color:var(--text-muted);font-size:0.82rem;padding:12px;text-align:center;">No conversations yet. Start by describing your legal issue.</p>';
-      return;
+    if (!API.isLoggedIn()) return;
+    try {
+        const sessions = await API.get('/chat/sessions');
+        const listEl = document.getElementById('conv-list');
+        if (listEl) {
+            listEl.innerHTML = sessions.map(s => `
+                <div class="conv-item ${s.id === activeSessionId ? 'active' : ''}" onclick="loadSessionMessages(${s.id})">
+                    <h4>${s.title}</h4>
+                    <p>${new Date(s.updated_at).toLocaleDateString()}</p>
+                </div>
+            `).join('');
+        }
+    } catch (err) {
+        console.error('Failed to load chat sessions', err);
     }
-    list.innerHTML = sessions.map(s => `
-      <div class="conv-item ${s.id === activeSessionId ? 'active' : ''}" onclick="loadSession(${s.id})">
-        <h4>${Utils.escapeHtml(s.title)}</h4>
-        <p>${Utils.timeAgo(s.updated_at)}</p>
-      </div>
-    `).join('');
-  } catch (err) {
-    list.innerHTML = '<p style="color:var(--text-muted);font-size:0.82rem;padding:12px;text-align:center;">Could not load sessions.</p>';
-  }
+}
+
+async function loadSessionMessages(sessionId) {
+    activeSessionId = sessionId;
+    const messagesEl = document.getElementById('chat-messages');
+    messagesEl.innerHTML = '<div class="loading-state">Loading conversation...</div>';
+    
+    // Toggle active state in sidebar
+    document.querySelectorAll('.conv-item').forEach(item => item.classList.remove('active'));
+    
+    try {
+        const data = await API.get(`/chat/sessions/${sessionId}`);
+        messagesEl.innerHTML = data.messages.map(m => renderMessage(m.role, m.content)).join('');
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        loadSessions(); // Refresh sidebar to show active
+    } catch (err) {
+        messagesEl.innerHTML = '<div class="error-state">Failed to load messages.</div>';
+    }
 }
 
 function newConversation() {
-  activeSessionId = null;
-  const messagesEl = document.getElementById('chat-messages');
-  messagesEl.innerHTML = `
-    <div class="chat-message ai">
-      <div class="chat-avatar">🧠</div>
-      <div class="chat-bubble">
-        <strong>New conversation started!</strong><br><br>
-        Describe your legal issue and I'll analyze it with AI to provide:<br>
-        • <strong>Legal classification</strong> of your situation<br>
-        • <strong>Risk assessment</strong> with severity levels<br>
-        • <strong>Your legal rights</strong> in this situation<br>
-        • <strong>Step-by-step action plan</strong><br><br>
-        <em style="color:var(--text-muted);font-size:0.85rem;">Powered by real AI — not keyword matching.</em>
-      </div>
-    </div>
-  `;
-  loadSessions();
-}
-
-async function loadSession(id) {
-  activeSessionId = id;
-  const messagesEl = document.getElementById('chat-messages');
-
-  try {
-    const data = await API.getChatSession(id);
-    messagesEl.innerHTML = data.messages.map(m => renderMessage(m.role, m.content)).join('');
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-  } catch (err) {
-    Utils.showToast('Failed to load session', 'error');
-  }
-  loadSessions();
+    activeSessionId = null;
+    clearFile();
+    const messagesEl = document.getElementById('chat-messages');
+    messagesEl.innerHTML = `
+        <div class="chat-message ai">
+            <div class="chat-avatar">🧠</div>
+            <div class="chat-bubble">
+                <strong>I'm ready to listen.</strong><br><br>
+                Tell me exactly what has happened, or 📎 **attach a document** (Agreement, Notice, or Ticket) for analysis.<br><br>
+                I'll identify the key legal risks and clarify your rights under Indian Law.<br><br>
+                <em style="color:var(--text-muted);font-size:0.85rem;">How can I help you today?</em>
+            </div>
+        </div>
+    `;
+    document.querySelectorAll('.conv-item').forEach(item => item.classList.remove('active'));
 }
 
 function renderMessage(role, content) {
-  if (role === 'user') {
-    return `<div class="chat-message user"><div class="chat-avatar">👤</div><div class="chat-bubble">${Utils.escapeHtml(content)}</div></div>`;
-  } else {
-    // AI messages may contain formatted text with line breaks
-    const formatted = content.replace(/\n/g, '<br>');
-    return `<div class="chat-message ai"><div class="chat-avatar">🧠</div><div class="chat-bubble">${formatted}</div></div>`;
-  }
+    // Basic markdown-like formatting for better readability
+    let formatted = content.replace(/\n/g, '<br>');
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    const avatar = role === 'user' ? '👤' : '🧠';
+    
+    return `
+        <div class="chat-message ${role}">
+            <div class="chat-avatar">${avatar}</div>
+            <div class="chat-bubble">
+                ${formatted}
+            </div>
+        </div>`;
 }
 
 async function sendMessage() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text) return;
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    
+    if (!text && !selectedFile) return;
 
-  if (!API.isLoggedIn()) {
-    Utils.showToast('Please sign in to use the AI assistant', 'error');
-    return;
-  }
+    if (!API.isLoggedIn()) {
+        Utils.showToast('Please sign in to use the AI assistant', 'error');
+        return;
+    }
 
-  const messagesEl = document.getElementById('chat-messages');
+    const messagesEl = document.getElementById('chat-messages');
 
-  // Show user message immediately
-  messagesEl.innerHTML += renderMessage('user', text);
-  input.value = '';
-  input.style.height = 'auto';
+    // 1. SHOW USER MESSAGE IN UI
+    let userDisplay = text || (selectedFile ? `Analyzing document: ${selectedFile.name}` : "");
+    messagesEl.innerHTML += renderMessage('user', userDisplay);
+    
+    // 2. PREPARE MULTIPART DATA
+    const formData = new FormData();
+    formData.append('message', text);
+    if (activeSessionId) formData.append('sessionId', activeSessionId);
+    if (selectedFile) formData.append('file', selectedFile);
 
-  // Show typing indicator
-  messagesEl.innerHTML += `<div class="chat-message ai" id="typing-msg"><div class="chat-avatar">🧠</div><div class="chat-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+    // Clear input and preview
+    input.value = '';
+    input.style.height = 'auto';
+    const currentFile = selectedFile;
+    clearFile();
 
-  // Disable send button
-  const sendBtn = document.getElementById('send-btn');
-  if (sendBtn) sendBtn.disabled = true;
-
-  try {
-    const result = await API.sendChat(text, activeSessionId);
-    activeSessionId = result.sessionId;
-
-    // Remove typing indicator and show response
-    document.getElementById('typing-msg')?.remove();
-    messagesEl.innerHTML += renderMessage('ai', result.response);
+    // 3. SHOW TYPING INDICATOR
+    const typingId = 'typing-' + Date.now();
+    messagesEl.innerHTML += `<div class="chat-message ai" id="${typingId}"><div class="chat-avatar">🧠</div><div class="chat-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
     messagesEl.scrollTop = messagesEl.scrollHeight;
 
-    await loadSessions();
-  } catch (err) {
-    document.getElementById('typing-msg')?.remove();
-    messagesEl.innerHTML += renderMessage('ai', '❌ Error: ' + err.message + '. Please try again.');
+    try {
+        // 4. CALL REAL API GATEWAY
+        const response = await fetch(`${API.BASE_URL}/chat`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('pocket_lawyer_token')}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+        
+        // Remove typing indicator
+        document.getElementById(typingId)?.remove();
+
+        if (data.error) {
+            messagesEl.innerHTML += renderMessage('ai', `Error: ${data.error}`);
+        } else {
+            activeSessionId = data.sessionId;
+            messagesEl.innerHTML += renderMessage('ai', data.response);
+            loadSessions(); // Update history sidebar
+        }
+    } catch (err) {
+        document.getElementById(typingId)?.remove();
+        messagesEl.innerHTML += renderMessage('ai', "I'm sorry, I couldn't reach the legal engine. Please check your connection.");
+    }
+
     messagesEl.scrollTop = messagesEl.scrollHeight;
-  } finally {
-    if (sendBtn) sendBtn.disabled = false;
-  }
 }
 
 function toggleChatSidebar() {
-  document.getElementById('chat-sidebar')?.classList.toggle('open');
+    document.getElementById('chat-sidebar')?.classList.toggle('open');
 }

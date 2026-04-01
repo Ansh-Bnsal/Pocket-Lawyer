@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile – Pocket Lawyer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <style>
+    .profile-container { max-width: 800px; margin-top: 24px; }
+    .profile-card { background: var(--bg-surface); border-radius: var(--radius-lg); padding: 32px; border: 1px solid var(--border-color); }
+    .profile-section { margin-bottom: 40px; }
+    .profile-section h3 { font-size: 1.1rem; margin-bottom: 20px; color: var(--primary-light); display: flex; align-items: center; gap: 10px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .full-width { grid-column: span 2; }
+    .save-bar { position: sticky; bottom: 24px; background: rgba(10, 11, 20, 0.8); backdrop-filter: blur(10px); padding: 16px 24px; border-radius: var(--radius-full); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-top: 40px; box-shadow: var(--shadow-lg); }
+  </style>
+</head>
+<body>
+  <nav class="navbar scrolled">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">⚖️</span>
+        <span class="logo-text">Pocket<span class="logo-accent">Lawyer</span></span>
+      </a>
+      <div class="nav-actions">
+        <span class="btn btn-ghost" id="top-user-name"></span>
+        <a href="#" class="btn btn-ghost btn-sm" onclick="API.logout()">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <!-- Master Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Main</div>
+        <a href="dashboard.html" class="sidebar-link">
+          <span class="link-icon">📊</span> Overview
+        </a>
+        <a href="case.html" class="sidebar-link">
+          <span class="link-icon">🧠</span> AI Copilot
+        </a>
+        <a href="legal_services.html" class="sidebar-link">
+          <span class="link-icon">🛡️</span> Legal Services
+        </a>
+      </div>
+      
+      <div class="sidebar-section">
+        <div class="sidebar-label">My Records</div>
+        <a href="vault.html" class="sidebar-link">
+          <span class="link-icon">📂</span> Digital Vault
+        </a>
+        <a href="discovery.html" class="sidebar-link">
+          <span class="link-icon">🔍</span> Find a Lawyer
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Settings</div>
+        <a href="profile.html" class="sidebar-link active">
+          <span class="link-icon">⚙️</span> My Profile
+        </a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <div class="dashboard-header">
+        <div>
+          <h1>My Profile</h1>
+          <p>This information is used to auto-fill legal documents and notices.</p>
+        </div>
+      </div>
+
+      <div class="profile-container">
+        <form id="profile-form" onsubmit="handleProfileSave(event)">
+            <div class="profile-card">
+                <!-- Identity Section -->
+                <div class="profile-section">
+                    <h3><span>👤</span> Identity Details</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Full Name (Legal)</label>
+                            <input type="text" name="full_name" class="form-input" placeholder="As per Identity Proof" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Parent / Spouse Name</label>
+                            <input type="text" name="parent_name" class="form-input" placeholder="S/o or D/o Name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" name="phone" class="form-input" placeholder="+91 XXXXX XXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" name="email" class="form-input" placeholder="email@example.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KYC Section -->
+                <div class="profile-section">
+                    <h3><span>🛡️</span> Aadhaar / Identity</h3>
+                    <div class="form-grid" style="grid-template-columns: 2fr 1fr;">
+                        <div class="form-group">
+                            <label class="form-label">Aadhaar Last 4 Digits</label>
+                            <input type="text" name="aadhaar_last4" class="form-input" maxlength="4" placeholder="XXXX">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permanent Address Section -->
+                <div class="profile-section" style="margin-bottom:0;">
+                    <h3><span>🏠</span> Permanent Address</h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label class="form-label">House / Office Address</label>
+                            <input type="text" name="address_line" class="form-input" placeholder="Line 1, Building, Street">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">City</label>
+                            <input type="text" name="city" class="form-input" placeholder="City">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">State</label>
+                            <select name="state" class="form-input">
+                                <option value="Delhi">Delhi</option>
+                                <option value="Maharashtra">Maharashtra</option>
+                                <option value="Karnataka">Karnataka</option>
+                                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                <option value="Haryana">Haryana</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pincode</label>
+                            <input type="text" name="pincode" class="form-input" placeholder="XXXXXX">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Feedback Bar -->
+            <div class="save-bar">
+                <span style="font-size:0.85rem; color:var(--text-muted);">Last updated: <span id="last-updated">Never</span></span>
+                <button type="submit" class="btn btn-primary">Save Profile Defaults</button>
+            </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!API.isLoggedIn()) window.location.href = 'login.html';
+      const user = API.getUser();
+      document.getElementById('top-user-name').innerText = `Hi, ${user.name}`;
+      loadProfileData();
+    });
+
+    function loadProfileData() {
+        const profile = JSON.parse(localStorage.getItem('pocket_lawyer_profile') || '{}');
+        const form = document.getElementById('profile-form');
+        
+        // Populate fields
+        for (const [key, value] of Object.entries(profile)) {
+            const input = form.elements[key];
+            if (input) input.value = value;
+        }
+
+        if (profile.updated_at) {
+            document.getElementById('last-updated').innerText = new Date(profile.updated_at).toLocaleString();
+        }
+    }
+
+    function handleProfileSave(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const profile = Object.fromEntries(formData);
+        profile.updated_at = new Date().toISOString();
+        
+        localStorage.setItem('pocket_lawyer_profile', JSON.stringify(profile));
+        Utils.showToast('Profile defaults saved successfully!', 'success');
+        document.getElementById('last-updated').innerText = new Date().toLocaleString();
+    }
+  </script>
+</body>
+</html>

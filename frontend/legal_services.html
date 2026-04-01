@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legal Services Hub – Pocket Lawyer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <style>
+    .service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; margin-top: 24px; }
+    .service-card { background: var(--bg-card); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--border-color); transition: var(--transition); display: flex; flex-direction: column; }
+    .service-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary-color); }
+    .service-icon { font-size: 2.5rem; margin-bottom: 16px; }
+    .pricing-tag { display: inline-block; padding: 4px 12px; background: var(--bg-body); border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; }
+    .appointment-box { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 32px; border-radius: var(--radius-lg); margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-lg); }
+    .appointment-box h2 { color: white; margin-bottom: 8px; }
+    .appointment-box p { color: rgba(255,255,255,0.8); }
+    
+    .hidden { display: none !important; }
+    .step-form { display: none; }
+    .step-form.active { display: block; }
+    .file-upload-zone { border: 2px dashed var(--border-color); padding: 30px; text-align: center; border-radius: var(--radius-md); cursor: pointer; transition: 0.2s; }
+    .file-upload-zone:hover { border-color: var(--primary-color); background: rgba(var(--primary-rgb), 0.05); }
+  </style>
+</head>
+<body>
+  <nav class="navbar scrolled" id="main-nav">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">⚖️</span>
+        <span class="logo-text">Pocket<span class="logo-accent">Lawyer</span></span>
+      </a>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="legal_services.html" class="nav-link active">Legal Services</a>
+      </div>
+      <div class="nav-actions">
+        <a href="#" class="btn btn-ghost btn-sm" id="logout-btn" onclick="API.logout()">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Main</div>
+        <a href="dashboard.html" class="sidebar-link">
+          <span class="link-icon">📊</span> Overview
+        </a>
+        <a href="case.html" class="sidebar-link">
+          <span class="link-icon">🧠</span> AI Copilot
+        </a>
+        <a href="legal_services.html" class="sidebar-link active">
+          <span class="link-icon">🛡️</span> Legal Services
+        </a>
+      </div>
+      
+      <div class="sidebar-section">
+        <div class="sidebar-label">My Records</div>
+        <a href="vault.html" class="sidebar-link">
+          <span class="link-icon">📂</span> Digital Vault
+        </a>
+        <a href="discovery.html" class="sidebar-link">
+          <span class="link-icon">🔍</span> Find a Lawyer
+        </a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <div class="dashboard-header">
+        <div>
+          <h1>Legal Services Hub</h1>
+          <p>Production-ready legal tools via Modular API Bridge</p>
+        </div>
+      </div>
+
+      <div class="appointment-box">
+        <div>
+          <h2>Consult with a Specialist</h2>
+          <p>Book a private consultation for expert legal strategy.</p>
+        </div>
+        <button class="btn btn-secondary" onclick="openAptModal()" style="border: 2px solid white; font-weight: 700;">Book Now</button>
+      </div>
+
+      <section>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+          <h2 style="margin:0;">Official LegalDesk Integration</h2>
+          <span style="background:var(--success-color); color:white; font-size:0.7rem; padding:2px 8px; border-radius:4px; font-weight:700;">VERIFIED</span>
+        </div>
+        <div class="service-grid" id="service-list"></div>
+      </section>
+
+      <section style="margin-top:48px;">
+        <h2>Active Requests & Appointments</h2>
+        <div id="combined-list" class="case-list" style="margin-top:16px;"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Service Context Modal -->
+  <div id="service-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width:550px;">
+      <div class="modal-header">
+        <h3 id="modal-title">Service Details</h3>
+        <button class="modal-close" onclick="closeModals()">&times;</button>
+      </div>
+      
+      <form id="service-context-form" onsubmit="handleServiceSubmit(event)">
+        <!-- Step 1: eSign Context -->
+        <div id="step-esign" class="step-form">
+          <div class="form-group">
+            <label class="form-label">Full Name of Signer</label>
+            <input type="text" name="signerName" class="form-input" placeholder="As per Aadhaar">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Aadhaar (Last 4 Digits)</label>
+            <input type="text" name="aadhaarLast4" class="form-input" placeholder="XXXX" maxlength="4">
+          </div>
+        </div>
+
+        <!-- Step 2: eStamp Context -->
+        <div id="step-estamp" class="step-form">
+          <div class="form-group">
+            <label class="form-label">State</label>
+            <select name="state" class="form-input">
+              <option value="Delhi">Delhi</option>
+              <option value="Maharashtra">Maharashtra</option>
+              <option value="Karnataka">Karnataka</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Stamp Value</label>
+            <input type="number" name="value" class="form-input" placeholder="e.g. 100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">First Party Name</label>
+            <input type="text" name="firstParty" class="form-input">
+          </div>
+        </div>
+
+        <!-- Step 3: eKYC Context -->
+        <div id="step-kyc" class="step-form">
+          <div class="form-group">
+            <label class="form-label">KYC Type</label>
+            <select name="kyc_type" class="form-input">
+              <option value="video">Video KYC (VCIP)</option>
+              <option value="aadhaar">Aadhaar Paperless KYC</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Registered Mobile Number</label>
+            <input type="text" name="mobile" class="form-input" placeholder="+91 XXXXX XXXXX">
+          </div>
+        </div>
+
+        <!-- Step 4: Rent Agreement Context -->
+        <div id="step-rent_agreement" class="step-form">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="form-group"><label class="form-label">Landlord Name</label><input type="text" name="landlord_name" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Landlord's Parent</label><input type="text" name="landlord_parent" class="form-input"></div>
+            <div class="form-group" style="grid-column: span 2;"><label class="form-label">Landlord Address</label><input type="text" name="landlord_address" class="form-input"></div>
+            
+            <div class="form-group"><label class="form-label">Tenant Name</label><input type="text" name="tenant_name" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Tenant's Parent</label><input type="text" name="tenant_parent" class="form-input"></div>
+            <div class="form-group" style="grid-column: span 2;"><label class="form-label">Tenant Address</label><input type="text" name="tenant_address" class="form-input"></div>
+
+            <div class="form-group"><label class="form-label">Monthly Rent (₹)</label><input type="number" name="rent_amount" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Security Deposit (₹)</label><input type="number" name="deposit_amount" class="form-input"></div>
+            
+            <div class="form-group"><label class="form-label">Start Date</label><input type="text" name="start_date" class="form-input" placeholder="01-04-2026"></div>
+            <div class="form-group"><label class="form-label">Notice Period (Months)</label><input type="number" name="notice_period" class="form-input" value="1"></div>
+            
+            <div class="form-group" style="grid-column: span 2;"><label class="form-label">Property Address (Premises)</label><input type="text" name="property_address" class="form-input"></div>
+          </div>
+        </div>
+
+        <!-- Step 5: General Affidavit Context -->
+        <div id="step-affidavit" class="step-form">
+          <div style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
+            <div class="form-group"><label class="form-label">Deponent Name</label><input type="text" name="name" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Age</label><input type="number" name="age" class="form-input"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Parent/Spouse Name</label><input type="text" name="parent_name" class="form-input"></div>
+          <div class="form-group"><label class="form-label">Permanent Address</label><input type="text" name="address" class="form-input"></div>
+          <div class="form-group"><label class="form-label">Purpose/Statement</label><textarea name="statement_body" class="form-input" rows="3"></textarea></div>
+        </div>
+
+        <!-- Step 6: Power of Attorney -->
+        <div id="step-poa" class="step-form">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="form-group"><label class="form-label">Principal Name</label><input type="text" name="name" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Principal Parent</label><input type="text" name="parent_name" class="form-input"></div>
+            <div class="form-group" style="grid-column: span 2;"><label class="form-label">Principal Address</label><input type="text" name="address" class="form-input"></div>
+            
+            <div class="form-group"><label class="form-label">Attorney Name</label><input type="text" name="attorney_name" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Attorney Parent</label><input type="text" name="attorney_parent" class="form-input"></div>
+            <div class="form-group" style="grid-column: span 2;"><label class="form-label">Attorney Address</label><input type="text" name="attorney_address" class="form-input"></div>
+
+            <div class="form-group"><label class="form-label">Authority Name (e.g. Sub-Registrar)</label><input type="text" name="authority_name" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Subject Matter</label><input type="text" name="subject_matter" class="form-input"></div>
+            <div class="form-group" style="grid-column: span 2;"><label class="form-label">Authorized Task</label><input type="text" name="specific_task_1" class="form-input"></div>
+          </div>
+        </div>
+
+        <!-- Document Upload (Common) -->
+        <div id="step-upload" class="form-group" style="margin-top:20px;">
+          <label class="form-label">Attach Document (Required)</label>
+          <div class="file-upload-zone" onclick="document.getElementById('file-input').click()">
+            <span id="file-label">Click to upload PDF document</span>
+            <input type="file" id="file-input" class="hidden" onchange="updateFileLabel(this)">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:24px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModals()" style="flex:1;">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex:2;">Initiate Service</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Appointment Modal -->
+  <div id="apt-modal" class="modal-overlay hidden">
+    <!-- Simplifed appointment form -->
+    <div class="modal-content" style="max-width:450px;">
+       <div class="modal-header"><h3>Book Consultation</h3><button class="modal-close" onclick="closeModals()">&times;</button></div>
+       <form onsubmit="handleAptSubmit(event)">
+         <div class="form-group"><label class="form-label">Specialist</label><select id="law-sel" class="form-input"><option value="2">Adv. Rajesh (Property)</option></select></div>
+         <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px;">Book Now</button>
+       </form>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    let currentService = null;
+    let servicesData = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!API.isLoggedIn()) window.location.href = 'login.html';
+      loadServices();
+      loadCombinedList();
+    });
+
+    async function loadServices() {
+      servicesData = await API.listLegalServices();
+      document.getElementById('service-list').innerHTML = servicesData.map(s => `
+        <div class="service-card">
+          <div class="pricing-tag">${s.price}</div>
+          <div class="service-icon">${getIcon(s.id)}</div>
+          <h3>${s.name}</h3>
+          <p style="font-size:0.85rem; color:var(--text-muted); flex:1;">${s.desc}</p>
+          <button class="btn btn-primary btn-sm" style="margin-top:20px;" onclick="startService('${s.id}', '${s.name}')">
+            ${s.id.startsWith('rent') || s.id.startsWith('affidavit') || s.id.startsWith('poa') ? 'Generate' : 'Initiate'}
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function startService(id, name) {
+      currentService = id;
+      const serviceObj = servicesData.find(s => s.id === id);
+      const isDraft = id.startsWith('rent') || id.startsWith('affidavit') || id.startsWith('poa');
+      
+      document.getElementById('modal-title').innerText = isDraft ? `Draft: ${name}` : `Initiate: ${name}`;
+      document.getElementById('service-modal').classList.remove('hidden');
+      
+      // Hide all context forms first
+      document.querySelectorAll('.step-form').forEach(f => f.classList.remove('active'));
+      
+      // Show relevant form
+      const step = document.getElementById('step-' + id);
+      if (step) step.classList.add('active');
+      
+      // Document Upload Zone logic
+      const uploadZone = document.getElementById('step-upload');
+      if (serviceObj && serviceObj.require_doc) {
+        uploadZone.classList.remove('hidden');
+      } else {
+        uploadZone.classList.add('hidden');
+      }
+
+      // Update button text
+      const submitBtn = document.querySelector('#service-context-form button[type="submit"]');
+      submitBtn.innerText = isDraft ? 'Generate Professional Draft' : 'Initiate Service';
+    }
+
+    async function handleServiceSubmit(e) {
+      e.preventDefault();
+      const formArr = new FormData(e.target);
+      const data = Object.fromEntries(formArr);
+      const serviceObj = servicesData.find(s => s.id === currentService);
+      const isDraft = currentService.startsWith('rent') || currentService.startsWith('affidavit') || currentService.startsWith('poa');
+      const fileLabel = document.getElementById('file-label').innerText;
+      const isDemo = fileLabel.includes('Demo Auto-Loaded');
+      
+      let res;
+      try {
+        if (isDraft) {
+          Utils.showToast('Generating draft...', 'info');
+          
+          // Helper: Simple Number to Words (Indian)
+          const toWords = (num) => {
+            const a = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+            const b = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+            if ((num = num.toString()).length > 9) return 'Too Large';
+            let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+            if (!n) return ''; let str = '';
+            str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + ' Crore ' : '';
+            str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + ' Lakh ' : '';
+            str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + ' Thousand ' : '';
+            str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + ' Hundred ' : '';
+            str += (n[5] != 0) ? (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + ' ' : '';
+            return str.trim();
+          };
+
+          // Auto-Formatting for Legal Consistency
+          const now = new Date();
+          data.date = String(now.getDate()).padStart(2, '0');
+          data.month = now.toLocaleString('default', { month: 'long' });
+          data.year = String(now.getFullYear());
+          if (!data.city) data.city = "Delhi";
+          
+          if (data.rent_amount) data.rent_words = toWords(data.rent_amount);
+          if (data.deposit_amount) data.deposit_words = toWords(data.deposit_amount);
+          
+          // Auto-calculate End Date (11 months later)
+          if (data.start_date) {
+             const parts = data.start_date.split('-');
+             const start = new Date(parts[2], parts[1]-1, parts[0]);
+             start.setMonth(start.getMonth() + 11);
+             data.end_date = `${String(start.getDate()).padStart(2,'0')}-${String(start.getMonth()+1).padStart(2,'0')}-${start.getFullYear()}`;
+          }
+          
+          res = await API.requestDraft(currentService, data);
+          if (res.filename) {
+            Utils.showToast('Drafting complete! Downloading...', 'success');
+            triggerDownload(API.getDownloadUrl(res.filename), res.filename);
+          }
+        } else if (serviceObj.require_doc) {
+          const formData = new FormData(e.target);
+          const file = document.getElementById('file-input').files[0];
+          
+          if (!file && !isDemo) { 
+            Utils.showToast('Please attach a document!', 'error'); 
+            return; 
+          }
+          
+          if (file) formData.append('document', file);
+          
+          Utils.showToast('Uploading & Connecting...', 'info');
+          if (currentService === 'esign') res = await API.requestEsign(formData);
+          else if (currentService === 'estamp') res = await API.requestEstamp(formData);
+        } else {
+          Utils.showToast('Initiating request...', 'info');
+          if (currentService === 'kyc') res = await API.requestKyc(data.kyc_type);
+        }
+        
+        Utils.showToast('Request successful!', 'success');
+        closeModals();
+        loadCombinedList();
+
+        if (!isDraft && (currentService === 'esign' || currentService === 'estamp')) {
+          setTimeout(() => {
+             if(confirm("✅ SUCCESS! Would you like to download the mock result?")) {
+                const sampleFile = currentService === 'estamp' ? 'sample_rent_agreement.pdf' : 'sample_affidavit.pdf';
+                triggerDownload(API.getDownloadUrl(sampleFile), `${currentService}_output.pdf`);
+             }
+          }, 800);
+        }
+      } catch (err) { Utils.showToast(err.message, 'error'); }
+    }
+
+
+    async function loadCombinedList() {
+      const container = document.getElementById('combined-list');
+      try {
+        const [apps, logs] = await Promise.all([
+          API.getAppointments(),
+          API.getServiceLogs()
+        ]);
+
+        const appHtml = apps.map(a => `
+          <div class="case-card">
+            <span class="status-badge status-${a.status}">APPOINTMENT: ${a.status.toUpperCase()}</span>
+            <h4>Consultation with Adv. ${a.lawyer_name || 'Expert'}</h4>
+            <p>📅 ${new Date(a.scheduled_at).toLocaleString()}</p>
+          </div>
+        `).join('');
+
+        const logHtml = logs.map(l => {
+          let extra = '';
+          const details = JSON.parse(l.details || '{}');
+          if (details.filename) {
+            extra = `<button class="btn btn-ghost btn-sm" onclick="triggerDownload('${API.getDownloadUrl(details.filename)}', '${details.filename}')">📥 Download Draft</button>`;
+          } else if (l.service_type === 'esign' || l.service_type === 'estamp') {
+            extra = `<button class="btn btn-ghost btn-sm" onclick="triggerDownload('${API.getDownloadUrl('sample_rent_agreement.pdf')}', 'signed_doc.pdf')">📥 Download Result</button>`;
+          }
+
+          return `
+            <div class="case-card">
+              <span class="status-badge status-${l.status}">SERVICE: ${l.status.toUpperCase()}</span>
+              <h4>${getServiceName(l.service_type)}</h4>
+              <p>Requested: ${new Date(l.created_at).toLocaleString()}</p>
+              <div style="margin-top:12px;">${extra}</div>
+            </div>
+          `;
+        }).join('');
+
+        container.innerHTML = (appHtml + logHtml) || '<div class="empty-state">No active requests found.</div>';
+      } catch (err) { }
+    }
+
+    function triggerDownload(url, filename) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function getServiceName(id) {
+      const names = { esign: 'Aadhaar eSign', estamp: 'Digital Stamp Paper', kyc: 'Video KYC', rent_agreement: 'Rent Agreement', affidavit: 'General Affidavit' };
+      return names[id] || id;
+    }
+
+    function getIcon(id) { 
+        const m = {esign:'✍️',estamp:'📜',kyc:'📹',rent_agreement:'🏠',affidavit:'⚖️',poa:'🔑'};
+        return m[id] || '💼';
+    }
+    function updateFileLabel(input) { document.getElementById('file-label').innerText = input.files[0].name; }
+    function openAptModal() { document.getElementById('apt-modal').classList.remove('hidden'); }
+    function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden')); }
+  </script>
+</body>
+</html>

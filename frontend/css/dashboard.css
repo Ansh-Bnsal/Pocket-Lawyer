@@ -462,8 +462,7 @@
 /* --- Chat / AI Assistant --- */
 .chat-layout {
   display: flex;
-  min-height: 100vh;
-  padding-top: 72px;
+  height: 100%;
 }
 
 .chat-sidebar {
@@ -485,7 +484,8 @@
   margin-left: 280px;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 72px);
+  height: 100%;
+  position: relative;
 }
 
 .chat-header {

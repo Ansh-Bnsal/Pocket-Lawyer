@@ -58,9 +58,15 @@ def require_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         auth_header = request.headers.get('Authorization', '')
-        if not auth_header.startswith('Bearer '):
+        token = None
+        if auth_header.startswith('Bearer '):
+            token = auth_header[7:]
+        elif 'token' in request.args:
+            token = request.args.get('token')
+            
+        if not token:
             return jsonify({'error': 'Authentication required'}), 401
-        token = auth_header[7:]
+            
         payload = _decode_token(token)
         if not payload:
             return jsonify({'error': 'Invalid or expired token'}), 401

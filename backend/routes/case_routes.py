@@ -7,7 +7,7 @@ import uuid
 import datetime
 from flask import Blueprint, request, jsonify
 from database import get_db
-from services.ai_service import analyze_case
+from services.ai import ai
 from routes.auth_routes import require_auth
 
 case_bp = Blueprint('cases', __name__)
@@ -25,13 +25,14 @@ def create_case():
     if not title or not description:
         return jsonify({'error': 'Title and description are required'}), 400
 
-    # AI Analysis — the Anti-Chatbot engine
+    # 🧠 AI ANALYSIS (Gateway)
     try:
-        ai_result = analyze_case(description)
-        ai_summary = ai_result.get('summary', '')
+        result = ai.ask("analyze_case", description)
+        ai_summary = result.text
+        ai_result = result.data
         if not case_type:
             case_type = ai_result.get('caseClassification', 'General')
-        ai_risk = ai_result.get('riskAssessment', {}).get('level', '').lower()
+        ai_risk = ai_result.get('riskLevel', '').lower()
         if ai_risk in ('high', 'medium', 'low'):
             risk_level = ai_risk
     except Exception as e:
