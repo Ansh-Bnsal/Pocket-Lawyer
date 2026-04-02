@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In – Pocket Lawyer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <!-- Nav -->
+  <nav class="navbar scrolled" id="main-nav">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">⚖️</span>
+        <span class="logo-text">Pocket<span class="logo-accent">Lawyer</span></span>
+      </a>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="case.html" class="nav-link">AI Assistant</a>
+      </div>
+      <div class="nav-actions"></div>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="auth-page">
+    <div class="hero-bg">
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+    </div>
+
+    <div class="auth-card" id="auth-card">
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="showAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="tab-register" onclick="showAuthTab('register')">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <h2>Welcome Back</h2>
+        <p class="auth-subtitle">Sign in to your Pocket Lawyer account</p>
+
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address</label>
+          <input type="email" id="login-email" class="form-input" placeholder="you@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Sign In</button>
+
+        <div class="auth-footer">
+          Don't have an account? <a href="#" onclick="showAuthTab('register')">Register now</a>
+        </div>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" style="display:none;" onsubmit="handleRegister(event)">
+        <h2>Create Account</h2>
+        <p class="auth-subtitle">Join Pocket Lawyer and manage your legal cases</p>
+
+        <!-- Role Selection -->
+        <label class="form-label">I am a...</label>
+        <div class="role-selector" id="role-selector">
+          <button type="button" class="role-option selected" data-role="client" onclick="selectRole('client')">
+            <span class="role-icon">👤</span>
+            <span class="role-name">Client</span>
+          </button>
+          <button type="button" class="role-option" data-role="lawyer" onclick="selectRole('lawyer')">
+            <span class="role-icon">⚖️</span>
+            <span class="role-name">Lawyer</span>
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-name">Full Name</label>
+          <input type="text" id="reg-name" class="form-input" placeholder="Enter your full name" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-email">Email Address</label>
+          <input type="email" id="reg-email" class="form-input" placeholder="you@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-password">Password</label>
+          <input type="password" id="reg-password" class="form-input" placeholder="Create a strong password" required minlength="6">
+        </div>
+
+        <!-- Lawyer-specific fields -->
+        <div id="lawyer-fields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="reg-specialization">Specialization</label>
+            <select id="reg-specialization" class="form-select">
+              <option value="">Select specialization</option>
+              <option value="property">Property & Real Estate</option>
+              <option value="family">Family Law</option>
+              <option value="criminal">Criminal Law</option>
+              <option value="corporate">Corporate & Business</option>
+              <option value="labor">Labor & Employment</option>
+              <option value="consumer">Consumer Rights</option>
+              <option value="tax">Tax Law</option>
+              <option value="civil">Civil Litigation</option>
+              <option value="ip">Intellectual Property</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-experience">Years of Experience</label>
+            <input type="number" id="reg-experience" class="form-input" placeholder="e.g. 5" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-bar-number">Bar Council Number</label>
+            <input type="text" id="reg-bar-number" class="form-input" placeholder="Enter bar council registration number">
+          </div>
+
+          <!-- Practice Mode Toggle -->
+          <label class="form-label">How will you practice?</label>
+          <div class="role-selector" id="practice-selector">
+            <button type="button" class="role-option selected" data-mode="private" onclick="selectPracticeMode('private')">
+              <span class="role-icon">👤</span>
+              <span class="role-name">Private</span>
+            </button>
+            <button type="button" class="role-option" data-mode="firm" onclick="selectPracticeMode('firm')">
+              <span class="role-icon">🏢</span>
+              <span class="role-name">Join a Firm</span>
+            </button>
+          </div>
+
+          <!-- Invite Code (shown when "Join a Firm" selected) -->
+          <div id="invite-code-field" style="display:none;">
+            <div class="form-group">
+              <label class="form-label" for="reg-invite-code">Firm Invite Code</label>
+              <input type="text" id="reg-invite-code" class="form-input" placeholder="e.g., FIRM-K9X2AB" style="text-transform:uppercase;letter-spacing:2px;font-weight:600;">
+              <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Get this code from your firm's admin.</p>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Create Account</button>
+
+        <div class="auth-footer">
+          Already have an account? <a href="#" onclick="showAuthTab('login')">Sign in</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Check hash for register tab
+    if (window.location.hash === '#register') showAuthTab('register');
+  </script>
+</body>
+</html>

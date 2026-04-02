@@ -34,4 +34,3 @@ backend/config.py
 secrets.json
 config.json
 .flaskenv
-pocketlawdemo/

@@ -49,5 +49,26 @@ class AIGateway:
                 data={"error": str(e)}
             )
 
+    def ask_stream(self, task: str, user_input: str, file_data: dict = None, context: str = None):
+        """
+        Streaming entry point for realtime typing effect. Bypasses Normalizer.
+        """
+        try:
+            prompt = PromptEngine.build(task, user_input, context, is_streaming=True)
+            
+            provider_key = AI_PROVIDER.lower() if AI_PROVIDER else "gemini"
+            is_demo = not GEMINI_API_KEY
+            
+            if is_demo:
+                provider = self.providers["mock"]
+            else:
+                provider = self.providers.get(provider_key, self.providers["gemini"])
+
+            for chunk in provider.stream_generate(prompt, file_data):
+                yield chunk
+
+        except Exception as e:
+            yield f"\n\n[Connection Error: {str(e)}]"
+
 # Export a singleton instance for global use
 ai = AIGateway()

@@ -72,29 +72,62 @@ def chat():
         )
         conn.commit()
 
-    # 🧠 CALL AI GATEWAY (The "Clean" Way)
-    # The route doesn't care about Gemini, Prompts, or JSON anymore.
-    # It just asks for a "chat" task and gets back professional text.
-    result = ai.ask("chat", message, file_data=file_data, context=case_context)
-    response_text = result.text
+    # 🧠 CALL AI GATEWAY via Streaming (with parallel doc analysis)
+    import threading
 
-    # 💾 SAVE AI RESPONSE
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            'INSERT INTO chat_messages (session_id, role, content) VALUES (?, ?, ?)',
-            (session_id, 'ai', response_text)
-        )
-        cursor.execute(
-            'UPDATE chat_sessions SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            (session_id,)
-        )
-        conn.commit()
+    # If file is attached, kick off structured analysis in background IMMEDIATELY
+    doc_analysis_result = [None]  # mutable container for thread result
+    
+    def _run_doc_analysis():
+        try:
+            result = ai.ask("doc_analysis", message or "Analyze this legal document.", file_data=file_data)
+            if result.data:
+                doc_analysis_result[0] = result.data
+        except Exception:
+            pass  # Never break the chat
 
-    return jsonify({
-        'sessionId': session_id,
-        'response': response_text
-    }), 200
+    bg_thread = None
+    if file_data:
+        bg_thread = threading.Thread(target=_run_doc_analysis, daemon=True)
+        bg_thread.start()
+
+    def generate():
+        full_response = []
+        # Step 1: Send Session ID metadata event
+        yield f"event: metadata\ndata: {json.dumps({'sessionId': session_id})}\n\n"
+        
+        # Step 2: Stream the casual text reply (starts INSTANTLY)
+        stream_task = "chat_doc" if file_data else "chat"
+        for chunk in ai.ask_stream(stream_task, message, file_data=file_data, context=case_context):
+            full_response.append(chunk)
+            formatted_chunk = json.dumps({"text": chunk})
+            yield f"data: {formatted_chunk}\n\n"
+        
+        # Step 3: Save to DB
+        final_text = "".join(full_response)
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                'INSERT INTO chat_messages (session_id, role, content) VALUES (?, ?, ?)',
+                (session_id, 'ai', final_text)
+            )
+            cursor.execute(
+                'UPDATE chat_sessions SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                (session_id,)
+            )
+            conn.commit()
+            
+        # Step 4: Wait for background doc analysis to finish (if running)
+        if bg_thread:
+            bg_thread.join(timeout=30)  # Wait max 30s
+            if doc_analysis_result[0]:
+                yield f"event: document\ndata: {json.dumps(doc_analysis_result[0])}\n\n"
+            
+        # Step 5: Close signal
+        yield "event: close\ndata: {}\n\n"
+
+    from flask import Response
+    return Response(generate(), mimetype='text/event-stream')
 
 @chat_bp.route('/chat/sessions', methods=['GET'])
 @require_auth

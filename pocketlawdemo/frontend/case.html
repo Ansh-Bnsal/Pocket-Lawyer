@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Legal Assistant – Pocket Lawyer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <nav class="navbar scrolled">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">⚖️</span>
+        <span class="logo-text">Pocket<span class="logo-accent">Lawyer</span></span>
+      </a>
+      <div class="nav-actions">
+        <span class="btn btn-ghost" id="user-greeting"></span>
+        <a href="#" class="btn btn-ghost btn-sm" onclick="API.logout()">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <!-- Master Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Main</div>
+        <a href="dashboard.html" class="sidebar-link">
+          <span class="link-icon">📊</span> Overview
+        </a>
+        <a href="case.html" class="sidebar-link active">
+          <span class="link-icon">🧠</span> AI Copilot
+        </a>
+        <a href="legal_services.html" class="sidebar-link">
+          <span class="link-icon">🛡️</span> Legal Services
+        </a>
+      </div>
+      
+      <div class="sidebar-section">
+        <div class="sidebar-label">My Records</div>
+        <a href="vault.html" class="sidebar-link">
+          <span class="link-icon">📂</span> Digital Vault
+        </a>
+        <a href="discovery.html" class="sidebar-link">
+          <span class="link-icon">🔍</span> Find a Lawyer
+        </a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main" style="padding:0; height:calc(100vh - 70px); overflow:hidden;">
+      <div class="chat-layout" style="height:100%;">
+        <!-- Sidebar: Conversations -->
+        <aside class="chat-sidebar" id="chat-sidebar">
+          <button class="btn btn-primary btn-block" onclick="newConversation()">➕ New Chat</button>
+          <div class="conv-list" id="conv-list"></div>
+        </aside>
+
+        <!-- Chat Area -->
+        <div class="chat-main">
+          <div class="chat-header">
+            <div>
+              <h3 style="font-size:1.1rem;">🧠 AI Legal Assistant</h3>
+              <p style="font-size:0.8rem;color:var(--text-muted);">Describe your legal issue to get structured guidance</p>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="toggleChatSidebar()" id="sidebar-toggle-btn">📋 History</button>
+          </div>
+
+          <div class="chat-disclaimer">
+            ⚠️ AI provides legal information and structuring assistance, not legal advice.
+          </div>
+
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-message ai">
+              <div class="chat-avatar">🧠</div>
+              <div class="chat-bubble">
+                <strong>Welcome to AI Legal Assistant!</strong><br><br>
+                Tell me about your legal issue, and I'll help you organize it into a structured case profile.
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-input-area">
+            <input type="file" id="chat-file-input" style="display:none;" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" onchange="handleFileSelect(event)">
+            <div class="chat-input-wrap">
+              <button class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="Attach Document (PDF/Image)">📎</button>
+              <div class="chat-composer">
+                <div id="chat-file-preview" class="chat-file-chip" style="display:none;">
+                  <span class="chip-icon">📄</span>
+                  <span id="selected-filename" class="chip-name">file.pdf</span>
+                  <span id="selected-filesize" class="chip-size"></span>
+                  <button class="chip-remove" onclick="clearFile()" title="Remove">✕</button>
+                </div>
+                <textarea class="chat-input" id="chat-input" placeholder="Describe your issue or attach a document..." rows="1" onkeydown="handleChatKeydown(event)"></textarea>
+              </div>
+              <button class="chat-send-btn" onclick="sendMessage()" id="send-btn">➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/app_state.js"></script>
+  <script src="js/chat.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!API.isLoggedIn()) { window.location.href = 'login.html'; return; }
+      const user = API.getUser();
+      const greeting = document.getElementById('user-greeting');
+      if (greeting) greeting.innerText = `Hi, ${user.name}`;
+      
+      // Dynamically update dashboard links based on role
+      let dashboardUrl = 'dashboard.html';
+      if (user.role === 'firm' || (user.role === 'lawyer' && user.firmRole === 'admin')) {
+        dashboardUrl = 'firm_dashboard.html';
+      } else if (user.role === 'lawyer') {
+        dashboardUrl = 'lawyer_dashboard.html';
+      }
+      
+      const navDashboard = document.querySelector('aside.dashboard-sidebar a[href="dashboard.html"]');
+      if (navDashboard) navDashboard.href = dashboardUrl;
+      
+      // Hide Citizen-only tabs for Lawyers/Firms
+      if (user.role === 'lawyer' || user.role === 'firm') {
+         const servicesLink = document.querySelector('aside.dashboard-sidebar a[href="legal_services.html"]');
+         if (servicesLink) servicesLink.style.display = 'none';
+         
+         const recordsSections = document.querySelectorAll('aside.dashboard-sidebar .sidebar-section');
+         if (recordsSections.length > 1) recordsSections[1].style.display = 'none'; // Hides 'My Records' section
+      }
+    });
+
+    function toggleChatSidebar() {
+      document.getElementById('chat-sidebar')?.classList.toggle('open');
+    }
+  </script>
+</body>
+</html>
