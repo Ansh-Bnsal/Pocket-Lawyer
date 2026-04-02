@@ -1,12 +1,13 @@
 import json
-from .prompts import chat, chat_doc, doc_analysis, analyze_case
+from .prompts import chat, chat_doc, doc_analysis, analyze_case, intent_extractor
 
 class PromptEngine:
     TEMPLATES = {
         "chat": chat,
         "chat_doc": chat_doc,
         "doc_analysis": doc_analysis,
-        "analyze_case": analyze_case
+        "analyze_case": analyze_case,
+        "intent_extractor": intent_extractor
     }
 
     @classmethod

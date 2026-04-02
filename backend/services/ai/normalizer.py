@@ -57,28 +57,28 @@ class Normalizer:
         text = data.get('answer', '')
         rights = data.get('legalRights', [])
         if rights:
-            text += "\n\n📋 **YOUR LEGAL RIGHTS**\n" + "\n".join(f"• {r}" for r in rights)
+            text += "\n\n[YOUR LEGAL RIGHTS]\n" + "\n".join(f"  {r}" for r in rights)
         steps = data.get('actionSteps', [])
         if steps:
-            text += "\n\n🎯 **ACTION PLAN**\n"
+            text += "\n\n[ACTION PLAN]\n"
             for s in steps:
                 text += f"{s.get('step', '')}. **{s.get('action', '')}** — {s.get('reason', '')}\n"
         warnings = data.get('warnings', [])
         if warnings:
-            text += "\n\n⚠️ **URGENT WARNINGS**\n" + "\n".join(f"• {w}" for w in warnings)
+            text += "\n\n[URGENT WARNINGS]\n" + "\n".join(f"  {w}" for w in warnings)
         return text
 
     @staticmethod
     def _format_doc_analysis(data):
-        severity_icons = {"HIGH": "🔴", "MEDIUM": "🟠", "LOW": "🟡"}
+        severity_icons = {"HIGH": "[HIGH]", "MEDIUM": "[MEDIUM]", "LOW": "[LOW]"}
         
         # 1. SIMPLIFIED EXPLANATION
-        text = f"📝 **SIMPLIFIED EXPLANATION:**\n{data.get('simplifiedExplanation', '')}\n\n"
+        text = f"[SIMPLIFIED EXPLANATION]:\n{data.get('simplifiedExplanation', '')}\n\n"
         
         # 2. USER RIGHTS (with Sections)
         rights = data.get('userRights', [])
         if rights:
-            text += "⚖️ **YOUR RIGHTS:**\n"
+            text += "[YOUR RIGHTS]:\n"
             for r in rights:
                 text += f"• **{r.get('section', '')}:** {r.get('right', '')}\n"
             text += "\n"
@@ -86,15 +86,15 @@ class Normalizer:
         # 3. CATEGORY
         category = data.get('category', '')
         if category:
-            text += f"📂 **CATEGORY:** {category}\n\n"
+            text += f"[CATEGORY]: {category}\n\n"
         
         # 4. HARMFUL CLAUSES (3-Tier Severity)
         clauses = data.get('harmfulClauses', [])
         if clauses:
-            text += f"⚠️ **{len(clauses)} RISKS DETECTED IN CLAUSES:**\n"
+            text += f"[RISKS DETECTED IN CLAUSES]:\n"
             for c in clauses:
                 sev = c.get('severity', 'MEDIUM').upper()
-                icon = severity_icons.get(sev, "🟠")
+                icon = severity_icons.get(sev, "[MEDIUM]")
                 clause_num = c.get('clauseNumber', '')
                 simplification = c.get('simplification', c.get('explanation', ''))
                 text += f"{icon} **{sev} Risk:** {clause_num} ({simplification})\n"
@@ -103,7 +103,7 @@ class Normalizer:
             # Detailed breakdown
             for c in clauses:
                 sev = c.get('severity', 'MEDIUM').upper()
-                icon = severity_icons.get(sev, "🟠")
+                icon = severity_icons.get(sev, "[MEDIUM]")
                 text += f"\n{icon} **[{sev}] {c.get('clauseNumber', '')}**\n"
                 text += f"  *\"{c.get('originalQuote', '')}\"*\n"
                 text += f"  **Simplification:** {c.get('simplification', '')}\n"
@@ -120,7 +120,7 @@ class Normalizer:
         verdict = data.get('verdict', '')
         risk = data.get('overallRisk', '')
         if verdict:
-            verdict_icon = {"SAFE_TO_SIGN": "✅", "PROCEED_WITH_CAUTION": "⚠️", "DO_NOT_SIGN": "🛑"}.get(verdict, "⚠️")
+            verdict_icon = {"SAFE_TO_SIGN": "[SAFE]", "PROCEED_WITH_CAUTION": "[CAUTION]", "DO_NOT_SIGN": "[WARNING]"}.get(verdict, "[CHECK]")
             text += f"\n{verdict_icon} **VERDICT:** {verdict.replace('_', ' ')} (Overall Risk: {risk})\n"
         
         return text

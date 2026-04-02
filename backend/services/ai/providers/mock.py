@@ -1,7 +1,7 @@
 import json
-from .base import BaseProvider
+from .base import AIProvider
 
-class MockProvider(BaseProvider):
+class MockProvider(AIProvider):
     def generate(self, prompt: str, file_data: dict = None, model: str = None) -> str:
         if "simplifiedExplanation" in prompt:
             return json.dumps({

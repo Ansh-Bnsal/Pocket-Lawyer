@@ -5,7 +5,7 @@ must implement the `generate` method.
 """
 from abc import ABC, abstractmethod
 
-class BaseProvider(ABC):
+class AIProvider(ABC):
     @abstractmethod
     def generate(self, prompt: str, file_data: dict = None, model: str = None) -> str:
         """

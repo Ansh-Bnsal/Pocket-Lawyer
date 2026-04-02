@@ -6,9 +6,9 @@ from config import AI_PROVIDER, GEMINI_API_KEY
 
 class AIGateway:
     def __init__(self):
-        # 🔌 PROVIDER REGISTRY
+        # [Registry] PROVIDER REGISTRY
         self.providers = {
-            "gemini": GeminiProvider(),
+            "gemini": GeminiProvider(model_name="gemini-flash-latest"),
             "mock": MockProvider(),
         }
 
@@ -18,27 +18,28 @@ class AIGateway:
         Automatically switches to MockProvider if API Key is missing.
         """
         try:
-            # 1. 📜 BUILD PROMPT
+            # 1. [Prompt] BUILD PROMPT
             prompt = PromptEngine.build(task, user_input, context)
             
-            # 2. 🔌 SELECT PROVIDER (With Demo Check)
+            # 2. [Select] SELECT PROVIDER (With Demo Check)
             provider_key = AI_PROVIDER.lower() if AI_PROVIDER else "gemini"
-            is_demo = not GEMINI_API_KEY
+            # Detect placeholder vs real key (Match config.py placeholder)
+            is_demo = not GEMINI_API_KEY or "SyAja7GM0rwE" in GEMINI_API_KEY or len(GEMINI_API_KEY) < 20
             
             if is_demo:
                 provider = self.providers["mock"]
             else:
                 provider = self.providers.get(provider_key, self.providers["gemini"])
             
-            # 3. 🚀 CALL AI
+            # 3. [Call] CALL AI
             raw_response = provider.generate(prompt, file_data)
             
-            # 4. 🧹 NORMALIZE
+            # 4. [Clean] NORMALIZE
             result = Normalizer.clean(task, raw_response)
             
-            # 5. 🏷️ ADD DEMO TAG
+            # 5. [Tag] ADD DEMO TAG
             if is_demo:
-                result.text = "[Demo Mode — AI Mocking active]\n\n" + result.text
+                result.text = "[Demo Mode - AI Mocking active]\n\n" + result.text
             
             return result
             
@@ -57,7 +58,8 @@ class AIGateway:
             prompt = PromptEngine.build(task, user_input, context, is_streaming=True)
             
             provider_key = AI_PROVIDER.lower() if AI_PROVIDER else "gemini"
-            is_demo = not GEMINI_API_KEY
+            # Detect placeholder vs real key (Match config.py placeholder)
+            is_demo = not GEMINI_API_KEY or "SyAja7GM0rwE" in GEMINI_API_KEY or len(GEMINI_API_KEY) < 20
             
             if is_demo:
                 provider = self.providers["mock"]

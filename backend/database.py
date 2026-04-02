@@ -191,6 +191,20 @@ def init_db():
         ''')
 
         cursor.execute('''
+            CREATE TABLE IF NOT EXISTS case_services (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                case_id         INTEGER     NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
+                service_type    TEXT        NOT NULL,
+                title           TEXT        NOT NULL,
+                status          TEXT        DEFAULT 'pending',
+                merge_key       TEXT,
+                extracted_data  TEXT,
+                created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        cursor.execute('''
             CREATE TABLE IF NOT EXISTS service_logs (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id         INTEGER     REFERENCES users(id) ON DELETE CASCADE,

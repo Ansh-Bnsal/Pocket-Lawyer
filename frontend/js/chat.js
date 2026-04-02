@@ -213,6 +213,9 @@ async function sendMessage() {
                         } else if (currentEvent === 'document') {
                             renderDocumentAnalysis(data, messagesEl);
                             messagesEl.scrollTop = messagesEl.scrollHeight;
+                        } else if (currentEvent === 'intent') {
+                            renderIntentAction(data, messagesEl);
+                            messagesEl.scrollTop = messagesEl.scrollHeight;
                         } else {
                             if (data.text) {
                                 aiText += data.text;
@@ -280,5 +283,32 @@ function renderDocumentAnalysis(data, container) {
     }
     
     html += '</div></div>';
+    container.innerHTML += html;
+}
+
+function renderIntentAction(data, container) {
+    if (!data.next_step || !data.title) return;
+    
+    // Choose an icon based on intent
+    let icon = '⚖️';
+    if (data.next_step === 'esign') icon = '✍️';
+    else if (data.next_step === 'estamp') icon = '📜';
+    else if (data.next_step === 'rent_agreement') icon = '🏠';
+    
+    const html = `
+        <div class="chat-message ai">
+            <div class="chat-avatar">🧠</div>
+            <div class="chat-bubble action-bar-bubble" style="width:100%; max-width:550px;">
+                <div class="action-bar-info">
+                    <div class="action-bar-icon">${icon}</div>
+                    <div class="action-bar-text">
+                        <h4>Smart Suggestion: ${data.title}</h4>
+                        <p>I can help you prepare this directly.</p>
+                    </div>
+                </div>
+                <button class="action-bar-btn" onclick="Utils.showToast('Initiating ${data.title}...', 'success')">Start Process</button>
+            </div>
+        </div>
+    `;
     container.innerHTML += html;
 }
