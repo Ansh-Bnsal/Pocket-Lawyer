@@ -23,18 +23,12 @@ def chat():
         session_id = data.get('sessionId')
         case_id = data.get('caseId')
         is_transient = data.get('is_transient', False)
-        history = data.get('history', [])
         file_data = None
     else:
         message = request.form.get('message', '').strip()
         session_id = request.form.get('sessionId')
         case_id = request.form.get('caseId')
         is_transient = request.form.get('is_transient') == 'true'
-        history_raw = request.form.get('history', '[]')
-        try:
-            history = json.loads(history_raw)
-        except:
-            history = []
         file_data = None
         if 'file' in request.files:
             file = request.files['file']
@@ -80,7 +74,6 @@ def chat():
         case_id=case_id or 0,
         user_role=request.user_role,
         case_context=case_context,
-        history=history,
         is_transient=is_transient
     )
 
@@ -103,73 +96,3 @@ def get_session(session_id):
         cursor.execute('SELECT * FROM chat_messages WHERE session_id = ? ORDER BY created_at ASC', (session_id,))
         messages = [dict(r) for r in cursor.fetchall()]
     return jsonify({'messages': messages}), 200
-
-@chat_bp.route('/chat/promote', methods=['POST'])
-@require_auth
-def promote_chat():
-    """
-    [Stability 49.0 - Stage 1 to Stage 2 Gate]
-    Promotes a temporary Transient Chat into a permanent Legal Case.
-    1. Creates Case.
-    2. Maps Session to Case.
-    3. Iterates over History to save 'user' / 'ai' messages.
-    4. Iterates over 'intent' objects to construct pending records in the Services Cart (case_services).
-    """
-    data = request.get_json()
-    title = data.get('title', 'New Legal Case')
-    history = data.get('history', [])
-
-    if not history:
-        return jsonify({'error': 'No chat history provided'}), 400
-
-    try:
-        with get_db() as conn:
-            cursor = conn.cursor()
-            
-            # 1. Initialize Active Legal Case
-            cursor.execute('''INSERT INTO cases (client_id, title, description, case_type, status, risk_level) 
-                              VALUES (?, ?, ?, ?, ?, ?)''',
-                           (request.user_id, title, "Case initialized automatically through AI Case Promoter.", "Legal Matter", "active", "medium"))
-            case_id = cursor.lastrowid
-            
-            # 2. Assign Chat Session to the Case
-            cursor.execute('INSERT INTO chat_sessions (user_id, case_id, title) VALUES (?, ?, ?)',
-                           (request.user_id, case_id, title))
-            session_id = cursor.lastrowid
-
-            # 3. Synchronize Transient Memory Array
-            for item in history:
-                role = item.get('role')
-                if role in ['user', 'ai']:
-                    content = item.get('content', '')
-                    cursor.execute('INSERT INTO chat_messages (session_id, role, content) VALUES (?, ?, ?)',
-                                   (session_id, role, content))
-                                   
-                # 4. 🛒 INJECT ACTION CARDS INTO SERVICES CART
-                elif role == 'intent':
-                    intent_data = item.get('data', {})
-                    next_step = intent_data.get('next_step')
-                    if next_step:
-                        i_title = intent_data.get('title', 'AI Suggested Legal Service')
-                        m_key = intent_data.get('merge_key', 'default')
-                        ex_data = json.dumps(intent_data.get('extracted_data', {}))
-                        
-                        # Verify idempotency
-                        cursor.execute('SELECT id FROM case_services WHERE case_id = ? AND merge_key = ?', (case_id, m_key))
-                        if not cursor.fetchone():
-                            cursor.execute('''INSERT INTO case_services (case_id, service_type, title, merge_key, extracted_data, status)
-                                           VALUES (?, ?, ?, ?, ?, ?)''',
-                                           (case_id, next_step, i_title, m_key, ex_data, 'pending'))
-                            
-            conn.commit()
-            
-            return jsonify({
-                'caseId': case_id,
-                'sessionId': session_id,
-                'message': 'Successfully promoted chat and injected services cart.'
-            }), 201
-
-    except Exception as e:
-        print(f"[Promote Chat Critical Error] {str(e)}")
-        return jsonify({'error': 'Failed to promote the intelligence track'}), 500
-

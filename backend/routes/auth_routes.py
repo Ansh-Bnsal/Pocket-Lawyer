@@ -57,6 +57,10 @@ def require_auth(f):
     """Decorator to require authentication on a route."""
     @wraps(f)
     def decorated(*args, **kwargs):
+        # [Stability 39.0] Allow CORS Preflight (OPTIONS) to pass through
+        if request.method == 'OPTIONS':
+            return f(*args, **kwargs)
+
         auth_header = request.headers.get('Authorization', '')
         token = None
         if auth_header.startswith('Bearer '):

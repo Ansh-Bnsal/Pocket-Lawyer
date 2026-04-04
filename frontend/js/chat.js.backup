@@ -159,11 +159,6 @@ const TransientManager = {
         history.push({ role, content, timestamp: new Date().toISOString() });
         sessionStorage.setItem('transient_chat', JSON.stringify(history));
     },
-    addIntent(data) {
-        const history = this.getHistory();
-        history.push({ role: 'intent', data: data, timestamp: new Date().toISOString() });
-        sessionStorage.setItem('transient_chat', JSON.stringify(history));
-    },
     clear() {
         sessionStorage.removeItem('transient_chat');
     }
@@ -200,11 +195,6 @@ async function sendMessage() {
     formData.append('message', text);
     if (activeSessionId) formData.append('sessionId', activeSessionId);
     if (selectedFile) formData.append('file', selectedFile);
-    
-    // Memory Continuity: Send history if this is a transient chat
-    if (!activeSessionId) {
-        formData.append('history', JSON.stringify(TransientManager.getHistory()));
-    }
 
     // Clear input and preview
     input.value = '';
@@ -261,14 +251,17 @@ async function sendMessage() {
                         if (currentEvent === 'metadata') {
                             if (data.sessionId) activeSessionId = data.sessionId;
                         } else if (currentEvent === 'error') {
+                            // [Stability 32.4] Error Cleanup — Remove dots if error occurs
+                            document.getElementById(typingId)?.remove();
+                            // 🏛️ CLEAN-GLASS UI (Friendly Mapping)
                             const errorMap = {
-                                'api_limit': "I am currently reviewing a high volume of legal documents. Please give me a moment and try again. (Code: 429)",
-                                'engine_error': "We are experiencing a minor technical delay in routing your query. Please refresh and try again. (Code: 500)",
-                                'default': "An intermittent connection glitch occurred. Please securely resubmit your request. (Code: 0)"
+                                'api_limit': "Our legal processing engine is momentarily at capacity. Please try again in 1 minute.",
+                                'engine_error': "We're experiencing a minor technical delay in processing this law. Please refresh and try again.",
+                                'default': "An intermittent connection glitch occurred. Please try your request again."
                             };
                             
                             const friendlyMsg = errorMap[data.type] || errorMap['default'];
-                            const errorBubble = document.getElementById(bubbleId);
+                            const errorBubble = document.getElementById(bubbleId) || document.getElementById(typingId);
                             if (errorBubble) {
                                 errorBubble.innerHTML = `
                                     <div style="color:var(--text-primary); border:1px solid var(--border-color); padding:16px; border-radius:12px; background:rgba(var(--primary-rgb), 0.03); display:flex; flex-direction:column; gap:12px;">
@@ -286,10 +279,6 @@ async function sendMessage() {
                             messagesEl.scrollTop = messagesEl.scrollHeight;
                         } else if (currentEvent === 'intent') {
                             renderIntentAction(data, messagesEl);
-                            if (!activeSessionId) {
-                                TransientManager.addIntent(data);
-                                if (data.is_case_worthy) pendingPromotion = data;
-                            }
                             messagesEl.scrollTop = messagesEl.scrollHeight;
                         } else if (currentEvent === 'message') {
                             if (data.text) {
@@ -311,11 +300,6 @@ async function sendMessage() {
         
         if (!activeSessionId) {
             TransientManager.addMessage('ai', aiText);
-            
-            // Execute Ghost-Promotion now that history is complete
-            if (pendingPromotion) {
-                handlePromotion(pendingPromotion.case_reasoning || pendingPromotion.title || 'Legal Matter');
-            }
         }
         
         loadSessions(); // Update history sidebar after conversation completes
@@ -324,9 +308,9 @@ async function sendMessage() {
         
         // 🏛️ CLEAN-GLASS CATCH (Professional Shield)
         const errorMap = {
-            'api_limit_exhausted': "I am currently reviewing a high volume of legal documents. Please give me a moment and try again. (Code: 429)",
-            'engine_busy': "The engine is performing multiple legal analyses simultaneously. Please wait a moment. (Code: 409)",
-            'default': "There was a momentary system interruption. Please refresh to continue. (Code: 500)"
+            'api_limit_exhausted': "Our legal engine is currently at peak capacity. Please try again in 1 minute.",
+            'engine_busy': "The engine is performing multiple legal analyses. Please wait a moment.",
+            'default': "There was a momentary system interruption. Please refresh to continue."
         };
         
         const friendlyMsg = errorMap[err.message] || errorMap['default'];
@@ -393,24 +377,30 @@ function renderDocumentAnalysis(data, container) {
 }
 
 function renderIntentAction(data, container) {
-    // 🏛️ AUTO CASE PROMOTER (Ghost-Promotion flagged — executed after text loop)
+    // 🏛️ CASE PROMOTER (Stage 1 -> Stage 2 transition)
     if (data.is_case_worthy && !activeSessionId) {
-        Utils.showToast("Legal matter detected. Securing conversation...", "info");
-        // No immediate handlePromotion here, let the read() loop finish first
+        const promoHtml = `
+            <div class="chat-message ai">
+                <div class="chat-avatar">👔</div>
+                <div class="chat-bubble" style="background:#f0f9ff; border:1px solid #bae6fd; max-width:550px;">
+                    <h4 style="margin:0 0 8px 0; color:#0c4a6e;">Legal Matter Detected</h4>
+                    <p style="font-size:0.85rem; margin-bottom:12px;">I've identified a serious legal grievance. Should I initialize a <strong>Local Preparation Track</strong> for this?</p>
+                    <div style="font-size:0.75rem; color:#0369a1; padding:8px; background:white; border-radius:4px; margin-bottom:12px;">AI Logic: ${data.case_reasoning}</div>
+                    <button class="btn btn-primary btn-sm" onclick="handlePromotion('${data.title.replace(/'/g, "\\'")}')">Yes, Start Local Preparation</button>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', promoHtml);
     }
 
     if (!data.next_step || !data.title) return;
     
-    // Choose an icon and subtitle based on intent
+    // Choose an icon based on intent
     let icon = '⚖️';
-    let subtitle = `Direct access to ${data.next_step.toUpperCase()} drafting.`;
-    
-    if (data.next_step === 'esign') { icon = '✍️'; subtitle = 'Direct access to document execution.'; }
-    else if (data.next_step === 'estamp') { icon = '📜'; subtitle = 'Direct access to stamp paper acquisition.'; }
-    else if (data.next_step === 'rent_agreement') { icon = '🏠'; subtitle = 'Direct access to 11-Month drafting.'; }
-    else if (data.next_step === 'lawyer_appointment') { icon = '📅'; subtitle = 'Schedule a professional consultation.'; }
-    else if (data.next_step === 'affidavit') { icon = '⚖️'; subtitle = 'Direct access to Sworn Affidavit drafting.'; }
-    else if (data.next_step === 'kyc') { icon = '📹'; subtitle = 'Direct access to ID verification.'; }
+    if (data.next_step === 'esign') icon = '✍️';
+    else if (data.next_step === 'estamp') icon = '📜';
+    else if (data.next_step === 'rent_agreement') icon = '🏠';
+    else if (data.next_step === 'lawyer_appointment') icon = '📅';
     
     const aiDataStr = JSON.stringify(data.extracted_data || {}).replace(/"/g, '&quot;');
     
@@ -426,7 +416,7 @@ function renderIntentAction(data, container) {
                         <div class="action-bar-icon" style="background:var(--primary-color); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;">${icon}</div>
                         <div>
                             <h4 style="margin:0 0 4px 0;">${data.title}</h4>
-                            <p style="margin:0; font-size:0.8rem; color:var(--text-secondary);">${subtitle}</p>
+                            <p style="margin:0; font-size:0.8rem; color:var(--text-secondary);">Direct access to ${data.next_step.toUpperCase()} drafting.</p>
                         </div>
                     </div>
                 </div>
@@ -440,8 +430,9 @@ async function handlePromotion(title) {
     const history = TransientManager.getHistory();
     if (history.length === 0) return;
 
+    Utils.showToast("Promoting chat to active case...", "info");
     try {
-        const res = await API.post('/chat/promote', {
+        const res = await API.post('/api/chat/promote', {
             title: title,
             history: history
         });
@@ -449,11 +440,10 @@ async function handlePromotion(title) {
         if (res.caseId) {
             TransientManager.clear();
             activeSessionId = res.sessionId;
-            Utils.showToast("Case #" + res.caseId + " created. Your conversation is now secured.", "success");
-            loadSessions();
+            Utils.showToast("Success! Local Case initialized.", "success");
+            window.location.href = `case.html?id=${res.caseId}`;
         }
     } catch (err) {
-        console.error("[Promotion Error]", err);
-        Utils.showToast("Could not secure conversation. Will retry on next message.", "error");
+        Utils.showToast("Promotion failed.", "error");
     }
 }

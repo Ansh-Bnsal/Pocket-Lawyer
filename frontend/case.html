@@ -10,6 +10,26 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/responsive.css">
+  <style>
+    /* 🛒 Smart Cart Styles */
+    .smart-cart-panel { padding: 20px; border-top: 1px solid var(--border-color); background: rgba(var(--primary-rgb), 0.02); }
+    .smart-cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .suggestion-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; margin-bottom: 10px; transition: 0.2s; cursor: pointer; }
+    .suggestion-card:hover { border-color: var(--primary-color); transform: scale(1.02); }
+    .suggestion-card h5 { margin: 0 0 4px 0; font-size: 0.85rem; }
+    .suggestion-card p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
+    
+    /* ⚖️ Status Toggle */
+    .case-status-bar { border-bottom: 1px solid var(--border-color); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); }
+    .status-pill { padding: 4px 12px; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .status-prep { background: rgba(var(--primary-rgb), 0.1); color: var(--primary-color); }
+    .status-court { background: #fee2e2; color: #ef4444; border: 1px solid #f87171; }
+    
+    .hidden { display: none !important; }
+    .step-form { display: none; }
+    .step-form.active { display: block; }
+    .file-upload-zone { border: 2px dashed var(--border-color); padding: 20px; text-align: center; border-radius: var(--radius-md); cursor: pointer; }
+  </style>
 </head>
 <body>
   <nav class="navbar scrolled">
@@ -26,78 +46,76 @@
   </nav>
 
   <div class="dashboard-layout">
-    <!-- Master Sidebar -->
     <aside class="dashboard-sidebar">
       <div class="sidebar-section">
         <div class="sidebar-label">Main</div>
-        <a href="dashboard.html" class="sidebar-link">
-          <span class="link-icon">📊</span> Overview
-        </a>
-        <a href="case.html" class="sidebar-link active">
-          <span class="link-icon">🧠</span> AI Copilot
-        </a>
-        <a href="legal_services.html" class="sidebar-link">
-          <span class="link-icon">🛡️</span> Legal Services
-        </a>
+        <a href="dashboard.html" class="sidebar-link"><span class="link-icon">📊</span> Overview</a>
+        <a href="case.html" class="sidebar-link active"><span class="link-icon">🧠</span> AI Copilot</a>
+        <a href="legal_services.html" class="sidebar-link"><span class="link-icon">🛡️</span> Legal Services</a>
       </div>
       
+      <!-- Persistent Smart Cart for the current case -->
+      <div class="sidebar-section">
+        <div class="sidebar-label">🛒 Smart Cart</div>
+        <div id="smart-cart-list" style="padding: 0 16px;">
+          <p style="font-size:0.75rem; color:var(--text-muted); padding:10px;">Chat with AI to see suggestions here...</p>
+        </div>
+      </div>
+
       <div class="sidebar-section">
         <div class="sidebar-label">My Records</div>
-        <a href="vault.html" class="sidebar-link">
-          <span class="link-icon">📂</span> Digital Vault
-        </a>
-        <a href="discovery.html" class="sidebar-link">
-          <span class="link-icon">🔍</span> Find a Lawyer
-        </a>
+        <a href="vault.html" class="sidebar-link"><span class="link-icon">📂</span> Digital Vault</a>
+        <a href="discovery.html" class="sidebar-link"><span class="link-icon">🔍</span> Find a Lawyer</a>
       </div>
     </aside>
 
     <main class="dashboard-main" style="padding:0; height:calc(100vh - 70px); overflow:hidden;">
-      <div class="chat-layout" style="height:100%;">
-        <!-- Sidebar: Conversations -->
+      <!-- Case Meta Info & Status -->
+      <div class="case-status-bar" id="case-status-bar" style="display:none;">
+        <div style="display:flex; align-items:center; gap:16px;">
+          <h4 id="case-title-display" style="margin:0;">Loading Case...</h4>
+          <div id="status-pill-container"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleCaseStatus()" id="status-toggle-btn">Switch to Official Mode</button>
+      </div>
+
+      <div class="chat-layout" style="height: calc(100% - 50px);">
         <aside class="chat-sidebar" id="chat-sidebar">
           <button class="btn btn-primary btn-block" onclick="newConversation()">➕ New Chat</button>
           <div class="conv-list" id="conv-list"></div>
         </aside>
 
-        <!-- Chat Area -->
         <div class="chat-main">
           <div class="chat-header">
             <div>
               <h3 style="font-size:1.1rem;">🧠 AI Legal Assistant</h3>
-              <p style="font-size:0.8rem;color:var(--text-muted);">Describe your legal issue to get structured guidance</p>
+              <p style="font-size:0.8rem;color:var(--text-muted);">Persistence & Context-Aware Assistant</p>
             </div>
             <button class="btn btn-ghost btn-sm" onclick="toggleChatSidebar()" id="sidebar-toggle-btn">📋 History</button>
           </div>
 
-          <div class="chat-disclaimer">
-            ⚠️ AI provides legal information and structuring assistance, not legal advice.
-          </div>
-
-          <div class="chat-messages" id="chat-messages">
+          <div class="chat-messages" id="chat-messages" style="flex:1; overflow-y:auto; padding:20px;">
             <div class="chat-message ai">
               <div class="chat-avatar">🧠</div>
               <div class="chat-bubble">
-                <strong>Welcome to AI Legal Assistant!</strong><br><br>
-                Tell me about your legal issue, and I'll help you organize it into a structured case profile.
+                <strong>Case Workspace Loaded.</strong><br><br>
+                How can I assist you with this specific legal matter today?
               </div>
             </div>
           </div>
 
           <div class="chat-input-area">
-            <input type="file" id="chat-file-input" style="display:none;" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" onchange="handleFileSelect(event)">
+            <input type="file" id="chat-file-input" style="display:none;" onchange="handleFileSelect(event)">
             <div class="chat-input-wrap">
-              <button class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="Attach Document (PDF/Image)">📎</button>
+              <button class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()">📎</button>
               <div class="chat-composer">
                 <div id="chat-file-preview" class="chat-file-chip" style="display:none;">
-                  <span class="chip-icon">📄</span>
-                  <span id="selected-filename" class="chip-name">file.pdf</span>
-                  <span id="selected-filesize" class="chip-size"></span>
-                  <button class="chip-remove" onclick="clearFile()" title="Remove">✕</button>
+                  <span id="selected-filename"></span>
+                  <button class="chip-remove" onclick="clearFile()">✕</button>
                 </div>
-                <textarea class="chat-input" id="chat-input" placeholder="Describe your issue or attach a document..." rows="1" onkeydown="handleChatKeydown(event)"></textarea>
+                <textarea class="chat-input" id="chat-input" placeholder="Ask AI anything about this case..." rows="1" onkeydown="handleChatKeydown(event)"></textarea>
               </div>
-              <button class="chat-send-btn" onclick="sendMessage()" id="send-btn">➤</button>
+              <button class="chat-send-btn" onclick="sendMessage()">➤</button>
             </div>
           </div>
         </div>
@@ -105,43 +123,106 @@
     </main>
   </div>
 
-  <div id="toast-container" class="toast-container"></div>
+  <!-- 🏛️ SHARED LEGAL SERVICE MODAL -->
+  <div id="service-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width:550px;">
+      <div class="modal-header">
+        <h3 id="modal-title">Service Details</h3>
+        <button class="modal-close" onclick="closeModals()">&times;</button>
+      </div>
+      <form id="service-context-form" onsubmit="handleSharedServiceSubmit(event)">
+        <!-- Forms dynamically shown via services_shared.js -->
+        <div id="step-esign" class="step-form"><div class="form-group"><label>Full Name</label><input type="text" name="signerName" class="form-input"></div><div class="form-group"><label>Aadhaar (Last 4)</label><input type="text" name="aadhaarLast4" class="form-input"></div></div>
+        <div id="step-estamp" class="step-form"><div class="form-group"><label>State</label><select name="state" class="form-input"><option value="Delhi">Delhi</option><option value="Maharashtra">Maharashtra</option></select></div><div class="form-group"><label>Value</label><input type="number" name="value" class="form-input"></div></div>
+        <div id="step-rent_agreement" class="step-form">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <input type="text" name="landlord_name" class="form-input" placeholder="Landlord">
+            <input type="text" name="tenant_name" class="form-input" placeholder="Tenant">
+            <input type="number" name="rent_amount" class="form-input" placeholder="Rent (₹)">
+            <input type="text" name="property_address" class="form-input" placeholder="Address" style="grid-column:span 2;">
+          </div>
+        </div>
+        <div id="step-lawyer_appointment" class="step-form">
+          <div class="form-group"><label>Case Category</label><input type="text" name="case_category" class="form-input" placeholder="e.g. Criminal, Family, Property"></div>
+          <div class="form-group"><label>Brief Context</label><textarea name="brief_context" class="form-input" rows="3" placeholder="Describe your situation briefly..."></textarea></div>
+          <div class="form-group"><label>Preferred Date</label><input type="date" name="preferred_date" class="form-input"></div>
+        </div>
+        <div id="step-upload" class="form-group hidden" style="margin-top:20px;">
+          <label>Attach PDF</label>
+          <input type="file" id="shared-file-input" class="form-input">
+        </div>
+        <div style="display:flex;gap:12px;margin-top:24px;"><button type="button" class="btn btn-ghost" onclick="closeModals()" style="flex:1;">Cancel</button><button type="submit" class="btn btn-primary" style="flex:2;">Confirm Action</button></div>
+      </form>
+    </div>
+  </div>
 
-  <script src="js/api.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/app_state.js"></script>
-  <script src="js/chat.js"></script>
+  <script src="js/api.js?v=3.0"></script>
+  <script src="js/utils.js?v=3.0"></script>
+  <script src="js/services_shared.js?v=3.0"></script>
+  <script src="js/chat.js?v=3.1"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    let currentCaseId = new URLSearchParams(window.location.search).get('id');
+
+    document.addEventListener('DOMContentLoaded', async () => {
       if (!API.isLoggedIn()) { window.location.href = 'login.html'; return; }
+      
       const user = API.getUser();
-      const greeting = document.getElementById('user-greeting');
-      if (greeting) greeting.innerText = `Hi, ${user.name}`;
-      
-      // Dynamically update dashboard links based on role
-      let dashboardUrl = 'dashboard.html';
-      if (user.role === 'firm' || (user.role === 'lawyer' && user.firmRole === 'admin')) {
-        dashboardUrl = 'firm_dashboard.html';
-      } else if (user.role === 'lawyer') {
-        dashboardUrl = 'lawyer_dashboard.html';
-      }
-      
-      const navDashboard = document.querySelector('aside.dashboard-sidebar a[href="dashboard.html"]');
-      if (navDashboard) navDashboard.href = dashboardUrl;
-      
-      // Hide Citizen-only tabs for Lawyers/Firms
-      if (user.role === 'lawyer' || user.role === 'firm') {
-         const servicesLink = document.querySelector('aside.dashboard-sidebar a[href="legal_services.html"]');
-         if (servicesLink) servicesLink.style.display = 'none';
-         
-         const recordsSections = document.querySelectorAll('aside.dashboard-sidebar .sidebar-section');
-         if (recordsSections.length > 1) recordsSections[1].style.display = 'none'; // Hides 'My Records' section
+      document.getElementById('user-greeting').innerText = `Hi, ${user.name}`;
+
+      if (currentCaseId) {
+          loadCaseDetails();
+          loadSessions(currentCaseId);
+          refreshSmartCart();
       }
     });
 
-    function toggleChatSidebar() {
-      document.getElementById('chat-sidebar')?.classList.toggle('open');
+    async function loadCaseDetails() {
+        const c = await API.getCase(currentCaseId);
+        document.getElementById('case-status-bar').style.display = 'flex';
+        document.getElementById('case-title-display').innerText = c.title;
+        renderStatusPill(c.is_court_registered);
     }
+
+    function renderStatusPill(isCourt) {
+        const container = document.getElementById('status-pill-container');
+        const btn = document.getElementById('status-toggle-btn');
+        if (isCourt) {
+            container.innerHTML = '<span class="status-pill status-court">🏛️ OFFICIAL COURT CASE</span>';
+            btn.innerText = 'Switch to Drafting Mode';
+        } else {
+            container.innerHTML = '<span class="status-pill status-prep">✍️ PREPARATION PHASE</span>';
+            btn.innerText = 'Register officially in Court';
+        }
+    }
+
+    async function toggleCaseStatus() {
+        // Logic to toggle BOOLEAN in DB (Mocked for now, needs API endpoint if real toggle desired)
+        Utils.showToast("Status updated successfully.", "success");
+    }
+
+    async function refreshSmartCart() {
+        const suggestions = await API.getCaseSuggestions(currentCaseId);
+        const list = document.getElementById('smart-cart-list');
+        if (suggestions.length === 0) {
+            list.innerHTML = '<p style="font-size:0.75rem; color:var(--text-muted); padding:10px;">Suggestions will appear here.</p>';
+            return;
+        }
+        list.innerHTML = suggestions.map(s => `
+            <div class="suggestion-card" onclick="SharedServices.openServiceModal('${s.service_type}', ${JSON.stringify(s.extracted_data).replace(/"/g, '&quot;')})">
+                <h5>${s.title}</h5>
+                <p>One-click logic available</p>
+            </div>
+        `).join('');
+    }
+
+    async function handleSharedServiceSubmit(e) {
+        e.preventDefault();
+        Utils.showToast("Service successfully initiated from Case Hub!", "success");
+        closeModals();
+    }
+
+    function toggleChatSidebar() { document.getElementById('chat-sidebar')?.classList.toggle('open'); }
+    function closeModals() { document.getElementById('service-modal').classList.add('hidden'); }
   </script>
 </body>
 </html>

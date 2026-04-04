@@ -22,7 +22,7 @@ def create_app():
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
-    # CORS — allow frontend to call API
+    # CORS — allow frontend to call API (Truly Open for local file development)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     # Initialize database pool and schema
@@ -52,10 +52,30 @@ def create_app():
             return send_from_directory(frontend_dir, path)
         return send_from_directory(frontend_dir, 'index.html')
 
+    # Global Error Handler: Return JSON instead of HTML for 500 errors
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        # Log the error for debugging
+        print(f"[CRITICAL ERROR] {str(e)}")
+        # If it's a 404/405/etc, pass it through
+        if hasattr(e, 'code') and e.code < 500:
+            return jsonify({'error': str(e), 'code': e.code}), e.code
+            
+        return jsonify({
+            'error': 'Legal Engine Runtime Exception',
+            'details': str(e),
+            'suggestion': 'The engine encountered a processing fault. Use /api/health to verify system status.'
+        }), 500
+
     # Health check
     @app.route('/api/health')
+    @app.route('/api/chat/health')
     def health():
-        return jsonify({'status': 'ok', 'service': 'Pocket Lawyer 2.0'}), 200
+        return jsonify({
+            'status': 'ok', 
+            'service': 'Pocket Lawyer 2.0',
+            'engine': 'Gemini-Flash-1.5'
+        }), 200
 
     return app
 

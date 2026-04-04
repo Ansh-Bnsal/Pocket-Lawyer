@@ -14,20 +14,17 @@ Available Services (next_step IDs):
 4. 'rent_agreement' (11-Month Drafting)
 5. 'affidavit' (General Affidavit)
 6. 'poa' (Power of Attorney)
-7. 'lawyer_appointment' (Book a Lawyer Consultation — use this for any serious grievance, crime, or dispute that does not fit services 1-6).
+7. 'lawyer_appointment' (ONLY if the user explicitly asks to book a lawyer, consult a lawyer, or schedule an appointment. Do not assume they want this just because they have a legal problem).
 
 If you detect a concrete need for a service:
-1. Identify the primary 'next_step' (MUST be exactly one of the 7 IDs above. For serious grievances or crimes that don't fit 1-6, use 'lawyer_appointment'. Only return null for casual greetings or general questions).
+1. Identify the primary 'next_step' (MUST be exactly one of the 7 IDs above. If the request does not naturally and specifically match one of the 7 services, you MUST return null).
 2. Provide a professional 'title' for the task.
 3. Assign a 'merge_key' (a unique ID based on the context to prevent duplicates).
-4. 'extracted_data': Extract ANY relevant fields. For 'lawyer_appointment', you MUST include:
-    - 'case_type': (A professional domain like "Criminal Law - Anti-Ragging", "Family Dispute", "Consumer Fraud")
-    - 'case_reasoning': (A one-sentence legal summary of why a lawyer is needed)
-    - 'grievance': (Short tag like "ragging", "divorce", "cheating")
+4. 'extracted_data': Extract ANY relevant fields mentioned in the chat.
 
 Additionally, always evaluate 'is_case_worthy':
-5. 'is_case_worthy': Boolean. Set to true if the user describes a specific grievance, offense, or dispute.
-6. 'case_reasoning': Redundant copy of the reasoning above.
+5. 'is_case_worthy': Boolean. Set to true if the user describes a specific grievance, offense, or dispute (e.g., "I face ragging").
+6. 'case_reasoning': A short (1-sentence) logic of why this is or isn't case-worthy.
 
 CRITICAL: Return ONLY JSON matching the schema. NEVER invent new service IDs."""
 

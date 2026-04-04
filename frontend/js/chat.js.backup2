@@ -200,11 +200,6 @@ async function sendMessage() {
     formData.append('message', text);
     if (activeSessionId) formData.append('sessionId', activeSessionId);
     if (selectedFile) formData.append('file', selectedFile);
-    
-    // Memory Continuity: Send history if this is a transient chat
-    if (!activeSessionId) {
-        formData.append('history', JSON.stringify(TransientManager.getHistory()));
-    }
 
     // Clear input and preview
     input.value = '';
@@ -288,7 +283,6 @@ async function sendMessage() {
                             renderIntentAction(data, messagesEl);
                             if (!activeSessionId) {
                                 TransientManager.addIntent(data);
-                                if (data.is_case_worthy) pendingPromotion = data;
                             }
                             messagesEl.scrollTop = messagesEl.scrollHeight;
                         } else if (currentEvent === 'message') {
@@ -311,11 +305,6 @@ async function sendMessage() {
         
         if (!activeSessionId) {
             TransientManager.addMessage('ai', aiText);
-            
-            // Execute Ghost-Promotion now that history is complete
-            if (pendingPromotion) {
-                handlePromotion(pendingPromotion.case_reasoning || pendingPromotion.title || 'Legal Matter');
-            }
         }
         
         loadSessions(); // Update history sidebar after conversation completes
@@ -393,10 +382,20 @@ function renderDocumentAnalysis(data, container) {
 }
 
 function renderIntentAction(data, container) {
-    // 🏛️ AUTO CASE PROMOTER (Ghost-Promotion flagged — executed after text loop)
+    // 🏛️ CASE PROMOTER (Stage 1 -> Stage 2 transition)
     if (data.is_case_worthy && !activeSessionId) {
-        Utils.showToast("Legal matter detected. Securing conversation...", "info");
-        // No immediate handlePromotion here, let the read() loop finish first
+        const promoHtml = `
+            <div class="chat-message ai">
+                <div class="chat-avatar">👔</div>
+                <div class="chat-bubble" style="background:#f0f9ff; border:1px solid #bae6fd; max-width:550px;">
+                    <h4 style="margin:0 0 8px 0; color:#0c4a6e;">Legal Matter Detected</h4>
+                    <p style="font-size:0.85rem; margin-bottom:12px;">I've identified a serious legal grievance. Should I initialize a <strong>Local Preparation Track</strong> for this?</p>
+                    <div style="font-size:0.75rem; color:#0369a1; padding:8px; background:white; border-radius:4px; margin-bottom:12px;">AI Logic: ${data.case_reasoning}</div>
+                    <button class="btn btn-primary btn-sm" onclick="handlePromotion('${data.title.replace(/'/g, "\\'")}')">Yes, Start Local Preparation</button>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', promoHtml);
     }
 
     if (!data.next_step || !data.title) return;
@@ -440,8 +439,9 @@ async function handlePromotion(title) {
     const history = TransientManager.getHistory();
     if (history.length === 0) return;
 
+    Utils.showToast("Promoting chat to active case...", "info");
     try {
-        const res = await API.post('/chat/promote', {
+        const res = await API.post('/api/chat/promote', {
             title: title,
             history: history
         });
@@ -449,11 +449,10 @@ async function handlePromotion(title) {
         if (res.caseId) {
             TransientManager.clear();
             activeSessionId = res.sessionId;
-            Utils.showToast("Case #" + res.caseId + " created. Your conversation is now secured.", "success");
-            loadSessions();
+            Utils.showToast("Success! Local Case initialized.", "success");
+            window.location.href = `case.html?id=${res.caseId}`;
         }
     } catch (err) {
-        console.error("[Promotion Error]", err);
-        Utils.showToast("Could not secure conversation. Will retry on next message.", "error");
+        Utils.showToast("Promotion failed.", "error");
     }
 }

@@ -14,7 +14,7 @@ def dict_factory(cursor, row):
     for idx, col in enumerate(cursor.description):
         # Handle JSON strings seamlessly for token_data and risk_analysis
         val = row[idx]
-        if col[0] in ['token_data', 'risk_analysis', 'structured_data'] and val:
+        if col[0] in ['token_data', 'risk_analysis', 'structured_data', 'extracted_data'] and val:
             try:
                 val = json.loads(val)
             except:
@@ -86,7 +86,8 @@ def init_db():
                 ai_summary      TEXT,
                 search_text     TEXT,
                 created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+                updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+                is_court_registered BOOLEAN DEFAULT 0
             )
         ''')
 

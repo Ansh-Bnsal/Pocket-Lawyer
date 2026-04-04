@@ -72,8 +72,7 @@ def list_available_services():
         {"id": "kyc", "name": "Video KYC (VCIP)", "desc": "Securely verify your identity for legal matters.", "price": "₹150", "require_doc": False},
         {"id": "rent_agreement", "name": "Rent Agreement Drafting", "desc": "Generate professional 11-month rent agreements.", "price": "₹499", "require_doc": False},
         {"id": "affidavit", "name": "General Affidavit", "desc": "Draft legally valid self-declaration affidavits.", "price": "₹299", "require_doc": False},
-        {"id": "poa", "name": "Power of Attorney", "desc": "Draft a Special Power of Attorney for property/bank work.", "price": "₹899", "require_doc": False},
-        {"id": "lawyer_appointment", "name": "Lawyer Consultation", "desc": "Book a consultation with a specialist lawyer for your case.", "price": "₹499", "require_doc": False}
+        {"id": "poa", "name": "Power of Attorney", "desc": "Draft a Special Power of Attorney for property/bank work.", "price": "₹899", "require_doc": False}
     ]
     return jsonify(services), 200
 

@@ -7,14 +7,14 @@ from abc import ABC, abstractmethod
 
 class AIProvider(ABC):
     @abstractmethod
-    def generate(self, prompt: str, file_data: dict = None, model: str = None) -> str:
+    def generate(self, prompt: str, file_data: dict = None, history: list = None, api_key: str = None) -> str:
         """
         Send a fully constructed prompt to the AI provider.
         """
         pass
 
     @abstractmethod
-    def stream_generate(self, prompt: str, file_data: dict = None, model: str = None):
+    def stream_generate(self, prompt: str, file_data: dict = None, history: list = None, api_key: str = None):
         """
         Stream text chunks from the AI provider.
         """

@@ -208,6 +208,14 @@ const API = {
     return this.get('/services/logs');
   },
 
+  async getCaseSuggestions(caseId) {
+    return this.get(`/cases/${caseId}/suggestions`);
+  },
+
+  async updateSuggestionStatus(suggestionId, status) {
+    return this.post(`/services/suggestions/${suggestionId}/status`, { status });
+  },
+
   getDownloadUrl(filename) {
     return `${API_BASE}/services/download/${filename}?token=${this._token}`;
   }

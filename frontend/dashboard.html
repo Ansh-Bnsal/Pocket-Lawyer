@@ -97,14 +97,31 @@
         </div>
       </div>
 
-      <!-- THE LEGAL CART (ACTIVE MATTER) -->
+      <!-- 🏛️ THE CASE LIFECYCLE HUB -->
+      <div class="case-hub-tabs" style="display:flex; gap:24px; margin-bottom:24px; border-bottom:1px solid var(--border-color);">
+        <button class="tab-btn active" onclick="switchHubTab('prep')" id="tab-prep" style="padding:12px 4px; border:none; background:none; font-weight:700; color:var(--primary-color); border-bottom:2px solid var(--primary-color); cursor:pointer;">Drafting & Prep</button>
+        <button class="tab-btn" onclick="switchHubTab('live')" id="tab-live" style="padding:12px 4px; border:none; background:none; font-weight:700; color:var(--text-muted); cursor:pointer;">Live & Official Cases</button>
+      </div>
+
       <div id="active-matter-container">
-        <!-- Will be populated by JS -->
-        <div class="card" style="padding:40px; text-align:center; border:1px dashed var(--border-color);">
-            <div style="font-size:3rem; margin-bottom:20px; opacity:0.5;">⚖️</div>
-            <h2 style="font-size:1.4rem; margin-bottom:12px;">No Active Legal Matter</h2>
-            <p style="color:var(--text-muted); max-width:400px; margin:0 auto 24px;">Start by describing your problem to our AI Copilot. We'll analyze your situation and guide you through the right actions.</p>
-            <button class="btn btn-primary" onclick="window.location.href='case.html'">Start AI Consultation</button>
+        <!-- Drafting/Prep Section -->
+        <div id="hub-prep-content">
+            <div class="card" style="padding:40px; text-align:center; border:1px dashed var(--border-color);">
+                <div style="font-size:3rem; margin-bottom:20px; opacity:0.5;">✍️</div>
+                <h2 style="font-size:1.4rem; margin-bottom:12px;">Start a Local Preparation</h2>
+                <p style="color:var(--text-muted); max-width:400px; margin:0 auto 24px;">Ongoing legal prep cases will appear here. Talk to AI to initialize a new track.</p>
+                <button class="btn btn-primary" onclick="window.location.href='case.html'">Start AI Consultation</button>
+            </div>
+        </div>
+
+        <!-- Live/Official Section -->
+        <div id="hub-live-content" class="hidden">
+            <div class="card" style="padding:40px; text-align:center; border:1px dashed var(--border-color); background:rgba(var(--primary-rgb), 0.02);">
+                <div style="font-size:3rem; margin-bottom:20px; opacity:0.5;">🏛️</div>
+                <h2 style="font-size:1.4rem; margin-bottom:12px;">No Official Cases Registered</h2>
+                <p style="color:var(--text-muted); max-width:400px; margin:0 auto 24px;">Register a Case ID (CNR) to track live court status and share Tokens with lawyers.</p>
+                <button class="btn btn-ghost" onclick="Utils.showToast('Select a prep case to promote to official filing.', 'info')">How to Register?</button>
+            </div>
         </div>
       </div>
 
@@ -182,76 +199,55 @@
       window.addEventListener('cartUpdated', renderDashboard);
     });
 
-    function renderDashboard() {
-        const cart = AppState.getCart();
-        const matterContainer = document.getElementById('active-matter-container');
-        const completedContainer = document.getElementById('completed-services');
+    function switchHubTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('active');
+            b.style.color = 'var(--text-muted)';
+            b.style.borderBottom = 'none';
+        });
+        document.getElementById('hub-prep-content').classList.add('hidden');
+        document.getElementById('hub-live-content').classList.add('hidden');
 
-        if (cart.active_case && cart.active_case.status === 'active') {
-            const pendingServices = cart.services.filter(s => s.status === 'pending');
-            matterContainer.innerHTML = `
-                <div class="card" style="padding:24px; border:1px solid var(--primary);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border-color);">
+        document.getElementById('tab-' + tab).classList.add('active');
+        document.getElementById('tab-' + tab).style.color = 'var(--primary-color)';
+        document.getElementById('tab-' + tab).style.borderBottom = '2px solid var(--primary-color)';
+        document.getElementById('hub-' + tab + '-content').classList.remove('hidden');
+    }
+
+    async function renderDashboard() {
+        if (!API.isLoggedIn()) return;
+        try {
+            const cases = await API.get('/cases');
+            const prepList = document.getElementById('hub-prep-content');
+            const liveList = document.getElementById('hub-live-content');
+            
+            const draftingCases = cases.filter(c => !c.is_court_registered);
+            const officialCases = cases.filter(c => c.is_court_registered);
+
+            if (draftingCases.length > 0) {
+                prepList.innerHTML = draftingCases.map(c => `
+                    <div class="card" style="padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
                         <div>
-                            <span class="badge badge-primary" style="margin-bottom:8px;">ACTIVE MATTER</span>
-                            <h2 style="font-size:1.3rem; margin:0;">${cart.active_case.title}</h2>
+                            <h4 style="margin:0;">${c.title}</h4>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin:4px 0 0 0;">Prep Mode &bull; Local Track</p>
                         </div>
-                        <button class="btn btn-ghost btn-sm" onclick="archiveCase()">Archive Case</button>
+                        <button class="btn btn-primary btn-sm" onclick="location.href='case.html?id=${c.id}'">Open Copilot</button>
                     </div>
-                    <div style="margin-bottom:24px;">
-                        <h3 style="font-size:1rem; margin-bottom:16px; color:var(--text-secondary);">Suggested Action Items (Your Cart)</h3>
-                        <div id="cart-items-list" style="display:flex; flex-direction:column; gap:16px;">
-                            ${pendingServices.length > 0 ? pendingServices.map(s => `
-                                <div class="card" style="padding:16px; background:var(--bg-elevated); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-                                    <div style="display:flex; align-items:center; gap:16px;">
-                                        <div style="font-size:1.5rem;">${getServiceIcon(s.service_key)}</div>
-                                        <div>
-                                            <h4 style="font-size:0.95rem; margin:0;">${formatServiceTitle(s)}</h4>
-                                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Added from AI Chat &bull; One-tap execution</p>
-                                        </div>
-                                    </div>
-                                    <div style="display:flex; gap:12px;">
-                                        <button class="btn btn-ghost btn-sm" onclick="removeService(${s.instance_id})">Remove</button>
-                                        <button class="btn btn-primary btn-sm" onclick="AppState.startWorkflow('${s.service_key}', ${s.instance_id})">Proceed to Checkout</button>
-                                    </div>
-                                </div>
-                            `).join('') : '<p style="color:var(--text-muted); padding:20px; text-align:center;">Your action list is empty. Ask AI for guidance.</p>'}
-                        </div>
-                    </div>
-                    ${pendingServices.length > 0 ? `
-                    <div style="background:var(--bg-elevated); padding:16px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:0.85rem; color:var(--text-muted);">${pendingServices.length} action item(s) ready for execution.</span>
-                        <button class="btn btn-primary" onclick="AppState.startWorkflow('${pendingServices[0].service_key}', ${pendingServices[0].instance_id})" style="box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);">🚀 Bulk Execute (Next Step)</button>
-                    </div>
-                    ` : ''}
-                </div>
-            `;
-        } else {
-            matterContainer.innerHTML = `
-                <div class="card" style="padding:40px; text-align:center; border:1px dashed var(--border-color);">
-                    <div style="font-size:3rem; margin-bottom:20px; opacity:0.5;">⚖️</div>
-                    <h2 style="font-size:1.4rem; margin-bottom:12px;">No Active Legal Matter</h2>
-                    <p style="color:var(--text-muted); max-width:400px; margin:0 auto 24px;">Start by describing your problem to our AI Copilot. We'll analyze your situation and guide you through the right actions.</p>
-                    <button class="btn btn-primary" onclick="window.location.href='case.html'">Start AI Consultation</button>
-                </div>
-            `;
-        }
+                `).join('');
+            }
 
-        const completedServices = cart.services.filter(s => s.status === 'completed');
-        if (completedServices.length > 0) {
-            completedContainer.innerHTML = completedServices.map(s => `
-                <div class="card" style="padding:20px; background:var(--bg-surface); border:1px solid var(--border-color);">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                        <span class="badge" style="background:rgba(34, 197, 94, 0.2); color:#22c55e;">COMPLETED</span>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">${new Date(s.updated_at || s.created_at).toLocaleDateString()}</span>
+            if (officialCases.length > 0) {
+                liveList.innerHTML = officialCases.map(c => `
+                    <div class="card" style="padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid #10b981;">
+                        <div>
+                            <h4 style="margin:0;">${c.title}</h4>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin:4px 0 0 0;">Official CNR: ${c.official_id || 'PENDING'}</p>
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="location.href='case.html?id=${c.id}'">View Record</button>
                     </div>
-                    <h4 style="font-size:0.95rem; margin-bottom:8px;">${formatServiceTitle(s)}</h4>
-                    <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:12px;" onclick="location.href='vault.html'">Download Files</button>
-                </div>
-            `).join('');
-        } else {
-            completedContainer.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem; grid-column:span 3;">No completed actions found.</p>';
-        }
+                `).join('');
+            }
+        } catch (err) { console.error(err); }
     }
 
     function removeService(id) {
