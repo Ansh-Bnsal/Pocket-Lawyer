@@ -8,11 +8,13 @@ Unlike traditional platforms, this uses a revolutionary **"Case → Structure �
 
 ## 🎯 Features
 
+- **Ghost-Promotion Engine:** Start a casual text-based case prep. If the AI detects a legal injury or severe grievance (e.g. harassment, fraud), it transparently "Ghost-Promotes" the transient text into an official protected Case ID without user friction.
+- **Smart Services Cart:** AI Intent Extractors automatically identify when a lawyer consultation or legal drafting is required and injects high-converting UI action cards directly into the sidebar stream.
 - **Anti-Chatbot AI Engine:** Uses strict system prompts to force AI (Gemini/OpenAI) to return structured JSON data for case analysis, risk detection, and legal guidance instead of generic chatty responses.
 - **Case Token System:** Case data is serialized into versioned JSON tokens. When a client switches lawyers, the new lawyer receives the complete, structured context instantly.
 - **Document AI Processing:** Upload PDF/DOCX files and the AI automatically extracts the text, summarizes it, and highlights legal risks (RED/YELLOW/GREEN).
 - **Role-Based Access:** Distinct secured dashboards for Clients, Lawyers, and Firm Administrators.
-- **Zero-Config Database:** Uses SQLite to store cases, chat logs, notes, timelines, and documents. No need to install PostgreSQL to run the project locally.
+- **Zero-Config Database:** Uses SQLite to store cases, chat logs, notes, timelines, and documents. No need to run Postgres.
 
 ---
 
@@ -43,14 +45,14 @@ pip install -r requirements.txt
 To enable the AI structuring features, you **must** configure an API key. By default, the system uses Google Gemini's free tier. 
 
 1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and create a free API Key.
-2. In the `backend` folder, duplicate the file named `config.example.py`.
-3. Rename the duplicated file to exactly `config.py`.
-4. Open your new `config.py` file and paste your key inside the empty string quotes on this line:
-   ```python
+2. In the `backend` folder, duplicate the file named `.env.example`.
+3. Rename the duplicated file to exactly `.env`.
+4. Open your new `.env` file and paste your key:
+   ```env
    # Google Gemini (default)
-   GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'PASTE_YOUR_KEY_HERE')
+   GEMINI_API_KEY="PASTE_YOUR_KEY_HERE"
    ```
-*(Note: `config.py` is safely ignored by Git so your keys won't leak when you push!)*
+*(Note: `.env` is safely ignored by Git so your keys won't leak when you push!)*
 
 ### 4. Start the Application
 ```bash

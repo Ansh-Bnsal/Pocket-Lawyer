@@ -125,6 +125,15 @@
         </div>
       </div>
 
+      <!-- FILTERED CASES VIEW (shown when clicking sidebar case links) -->
+      <div id="filtered-cases-view" class="hidden" style="margin-bottom:32px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h2 style="font-size:1.1rem; margin:0;" id="filtered-cases-title">All Cases</h2>
+              <button class="btn btn-ghost btn-sm" onclick="showHubView()">← Back to Hub</button>
+          </div>
+          <div id="filtered-cases-list" class="case-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:16px;"></div>
+      </div>
+
       <!-- RECENTLY COMPLETED / RECORDS -->
       <div class="section-header" style="margin-top:40px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
         <h2 style="font-size:1.1rem; margin:0;">🏆 Recently Completed</h2>
@@ -179,6 +188,8 @@
   <script src="js/utils.js"></script>
   <script src="js/app_state.js"></script>
   <script>
+    let allCases = []; // Cache for sidebar filtering
+
     document.addEventListener('DOMContentLoaded', () => {
       if (!API.isLoggedIn()) { window.location.href = 'login.html'; return; }
       const user = API.getUser();
@@ -217,19 +228,22 @@
     async function renderDashboard() {
         if (!API.isLoggedIn()) return;
         try {
-            const cases = await API.get('/cases');
+            allCases = await API.get('/cases');
             const prepList = document.getElementById('hub-prep-content');
             const liveList = document.getElementById('hub-live-content');
             
-            const draftingCases = cases.filter(c => !c.is_court_registered);
-            const officialCases = cases.filter(c => c.is_court_registered);
+            // Update sidebar badge
+            document.getElementById('total-cases-badge').innerText = allCases.length;
+
+            const draftingCases = allCases.filter(c => !c.is_court_registered);
+            const officialCases = allCases.filter(c => c.is_court_registered);
 
             if (draftingCases.length > 0) {
                 prepList.innerHTML = draftingCases.map(c => `
                     <div class="card" style="padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
                         <div>
                             <h4 style="margin:0;">${c.title}</h4>
-                            <p style="font-size:0.75rem; color:var(--text-muted); margin:4px 0 0 0;">Prep Mode &bull; Local Track</p>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin:4px 0 0 0;">Prep Mode &bull; ${c.case_type || 'General'} &bull; Risk: ${(c.risk_level || 'medium').toUpperCase()}</p>
                         </div>
                         <button class="btn btn-primary btn-sm" onclick="location.href='case.html?id=${c.id}'">Open Copilot</button>
                     </div>
@@ -248,6 +262,108 @@
                 `).join('');
             }
         } catch (err) { console.error(err); }
+    }
+
+    // ── Sidebar Case Filtering ──────────────────────────────────────────────
+    function filterCases(filter) {
+        // Hide the hub tabs, show the filtered view
+        document.getElementById('active-matter-container').classList.add('hidden');
+        document.querySelector('.case-hub-tabs').classList.add('hidden');
+        document.getElementById('filtered-cases-view').classList.remove('hidden');
+
+        const titleMap = { 'all': 'All Cases', 'active': 'Active Cases', 'closed': 'Closed Cases' };
+        document.getElementById('filtered-cases-title').innerText = titleMap[filter] || 'Cases';
+
+        let filtered = allCases;
+        if (filter === 'active') filtered = allCases.filter(c => c.status === 'active');
+        if (filter === 'closed') filtered = allCases.filter(c => c.status === 'closed');
+
+        const list = document.getElementById('filtered-cases-list');
+        if (filtered.length === 0) {
+            list.innerHTML = `<div class="card" style="padding:32px; text-align:center; grid-column:1/-1;">
+                <p style="color:var(--text-muted);">No ${filter} cases found.</p>
+            </div>`;
+            return;
+        }
+
+        list.innerHTML = filtered.map(c => {
+            const riskColors = { high: '#ef4444', medium: '#f59e0b', low: '#10b981' };
+            const riskColor = riskColors[(c.risk_level || 'medium').toLowerCase()] || '#f59e0b';
+            const statusLabel = c.status === 'closed' ? '⚫ Closed' : '🟢 Active';
+            return `
+            <div class="card" style="padding:20px; border-left:4px solid ${riskColor}; cursor:pointer;" onclick="location.href='case.html?id=${c.id}'">
+                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;">
+                    <h4 style="margin:0; font-size:1rem;">${c.title}</h4>
+                    <span style="font-size:0.7rem; padding:2px 8px; border-radius:20px; background:rgba(0,0,0,0.05); white-space:nowrap;">${statusLabel}</span>
+                </div>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 8px 0;">${c.case_type || 'General'} &bull; Risk: ${(c.risk_level || 'medium').toUpperCase()}</p>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin:0;">Created: ${new Date(c.created_at).toLocaleDateString()}</p>
+            </div>`;
+        }).join('');
+    }
+
+    function showHubView() {
+        document.getElementById('filtered-cases-view').classList.add('hidden');
+        document.getElementById('active-matter-container').classList.remove('hidden');
+        document.querySelector('.case-hub-tabs').classList.remove('hidden');
+    }
+
+    // ── Create Case Modal ────────────────────────────────────────────────────
+    let selectedCaseType = '';
+    let selectedRisk = 'medium';
+
+    function openCreateCase() {
+        document.getElementById('modal-overlay').classList.remove('hidden');
+        // Render case type selector
+        const types = ['Property', 'Family', 'Criminal', 'Consumer', 'Labor', 'Other'];
+        const selector = document.getElementById('case-type-selector');
+        if (selector) {
+            selector.innerHTML = types.map(t => `
+                <button type="button" class="filter-chip ${t === selectedCaseType ? 'active' : ''}" onclick="selectCaseType('${t}')">${t}</button>
+            `).join('');
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.add('hidden');
+    }
+
+    function selectCaseType(type) {
+        selectedCaseType = type;
+        document.querySelectorAll('#case-type-selector .filter-chip').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function selectRisk(level) {
+        selectedRisk = level;
+        document.querySelectorAll('[data-risk]').forEach(b => b.classList.remove('active'));
+        document.querySelector(`[data-risk="${level}"]`).classList.add('active');
+    }
+
+    async function handleCreateCase(e) {
+        e.preventDefault();
+        const title = document.getElementById('case-title').value.trim();
+        const desc = document.getElementById('case-desc').value.trim();
+        if (!title || !desc) { Utils.showToast('Title and description required', 'error'); return; }
+
+        const btn = e.target.querySelector('[type="submit"]');
+        btn.disabled = true;
+        btn.innerText = 'AI is Processing...';
+
+        try {
+            const res = await API.post('/cases', {
+                title, description: desc, caseType: selectedCaseType || 'General', riskLevel: selectedRisk
+            });
+            Utils.showToast(`Case #${res.id} created successfully!`, 'success');
+            closeModal();
+            e.target.reset();
+            await renderDashboard();
+        } catch (err) {
+            Utils.showToast('Failed to create case: ' + (err.message || 'Unknown error'), 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Create Case';
+        }
     }
 
     function removeService(id) {

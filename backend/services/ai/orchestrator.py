@@ -23,7 +23,11 @@ class AIOrchestrator:
             def _run_worker_b():
                 time.sleep(0.5) # [Burst Shield]
                 try:
-                    res = ai.ask("intent_extractor", message or "Reviewing context", context=safe_context, history=history)
+                    print(f"[Worker B] Firing Intent Extractor...")
+                    res = ai.ask("intent_extractor", message or ("User uploaded a document." if file_data else "Reviewing context"), file_data=file_data, context=safe_context, history=history)
+                    print(f"[Worker B] RAW AI RESPONSE: {res.text}")
+                    print(f"[Worker B] PARSED AI DATA: {res.data}")
+                    
                     if res.data and (res.data.get('next_step') or res.data.get('is_case_worthy')):
                         worker_b_result[0] = res.data
                         if not is_transient and case_id and res.data.get('next_step'):
@@ -36,7 +40,7 @@ class AIOrchestrator:
                                                    VALUES (?, ?, ?, ?, ?)''', (case_id, res.data['next_step'], res.data['title'], m_key, json.dumps(res.data.get('extracted_data'))))
                                     conn.commit()
                 except Exception as e: 
-                    print(f"[Worker B Suppressed] {e}")
+                    print(f"[Worker B CRASHED] {e}")
 
             t_b = threading.Thread(target=_run_worker_b, daemon=True)
             threads.append(t_b)
@@ -91,7 +95,7 @@ class AIOrchestrator:
             
         # Step 4: Synchronize Background Results
         for t in threads: 
-            t.join(timeout=10) 
+            t.join(timeout=25) 
         
         if worker_b_result[0]:
             yield f"event: intent\ndata: {json.dumps(worker_b_result[0])}\n\n"

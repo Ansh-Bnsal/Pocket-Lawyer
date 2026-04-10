@@ -241,6 +241,7 @@ async function sendMessage() {
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
         let aiText = "";
+        let pendingPromotion = null;
         let currentEvent = 'message';
 
         while (true) {
@@ -312,9 +313,14 @@ async function sendMessage() {
         if (!activeSessionId) {
             TransientManager.addMessage('ai', aiText);
             
+            console.log("🚀 [GHOST-PROMOTION CHECKPOINT] pendingPromotion state:", pendingPromotion);
+            
             // Execute Ghost-Promotion now that history is complete
             if (pendingPromotion) {
+                console.log("🎯 [GHOST-PROMOTION] FIRING handlePromotion() now!");
                 handlePromotion(pendingPromotion.case_reasoning || pendingPromotion.title || 'Legal Matter');
+            } else {
+                console.warn("⚠️ [GHOST-PROMOTION] Did NOT fire because pendingPromotion is null/undefined");
             }
         }
         
@@ -449,7 +455,23 @@ async function handlePromotion(title) {
         if (res.caseId) {
             TransientManager.clear();
             activeSessionId = res.sessionId;
-            Utils.showToast("Case #" + res.caseId + " created. Your conversation is now secured.", "success");
+            Utils.showToast("Case #" + res.caseId + " created", "success");
+            
+            // INDISPUTABLE UI FEEDBACK FOR USER
+            const messagesEl = document.getElementById('chat-messages');
+            if (messagesEl) {
+                const headerHtml = `
+                    <div style="margin: 24px 0; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 8px;">✅</div>
+                        <h4 style="color: #10b981; margin: 0 0 8px 0; font-size: 1.1rem;">Official Case Automatically Created</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">Case ID: #${res.caseId} &bull; ${title}</p>
+                        <p style="color: var(--text-secondary); font-size: 0.8rem; margin: 8px 0 0 0;">This case is now permanently saved to your Dashboard and Vault.</p>
+                    </div>
+                `;
+                messagesEl.insertAdjacentHTML('beforeend', headerHtml);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
+            
             loadSessions();
         }
     } catch (err) {

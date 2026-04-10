@@ -11,6 +11,40 @@ from database import get_db
 from services.ai import ai
 from routes.auth_routes import require_auth
 
+def __generate_case_token_async(case_id, user_id, history_transcript):
+    """
+    Background worker that analyzes the raw chat transcript, generates a structured 
+    Potential Case Token (JSON), and updates the case details.
+    """
+    try:
+        res = ai.ask("analyze_case", f"Transient Chat Transcript:\n{history_transcript}")
+        if not res.data:
+            print(f"[Token Minting Warning] AI returned no data for case {case_id}")
+            return
+            
+        token_data = res.data
+        case_type = token_data.get('caseClassification', 'Legal Matter')
+        summary = token_data.get('summary', 'Case automatically summarized.')
+        risk_level = (token_data.get('riskLevel') or 'medium').lower()
+        
+        with get_db() as conn:
+            cursor = conn.cursor()
+            # Mint the Token
+            cursor.execute('''INSERT INTO case_tokens (case_id, owner_id, token_data)
+                              VALUES (?, ?, ?)''', 
+                           (case_id, user_id, json.dumps(token_data)))
+            
+            # Upgrade the physical Case row
+            cursor.execute('''UPDATE cases 
+                              SET case_type = ?, description = ?, risk_level = ?
+                              WHERE id = ?''', 
+                           (case_type, summary, risk_level, case_id))
+            conn.commit()
+            print(f"[Token Minted] Successfully created Potential Case Token for Case #{case_id}")
+            
+    except Exception as e:
+        print(f"[Async Token Minting Failed] {str(e)}")
+
 chat_bp = Blueprint('chat', __name__)
 
 @chat_bp.route('/chat', methods=['POST'])
@@ -162,6 +196,11 @@ def promote_chat():
                                            (case_id, next_step, i_title, m_key, ex_data, 'pending'))
                             
             conn.commit()
+            
+            # 5. Launch Async Case Token Minting
+            transcript = "\n".join([f"{item.get('role', '').upper()}: {item.get('content', '')}" for item in history if item.get('role') in ['user', 'ai']])
+            if transcript:
+                threading.Thread(target=__generate_case_token_async, args=(case_id, request.user_id, transcript), daemon=True).start()
             
             return jsonify({
                 'caseId': case_id,

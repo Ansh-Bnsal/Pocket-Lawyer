@@ -30,7 +30,7 @@ Thumbs.db
 *.log
 
 # Sensitive Info (IMPORTANT)
-backend/config.py
+backend/.env
 secrets.json
 config.json
 .flaskenv
