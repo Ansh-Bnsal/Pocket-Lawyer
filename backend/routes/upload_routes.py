@@ -9,6 +9,8 @@ from werkzeug.utils import secure_filename
 from database import get_db
 from services.file_service import extract_text, allowed_file
 from services.ai import ai
+from services.rag import pipeline
+import threading
 from routes.auth_routes import require_auth
 
 upload_bp = Blueprint('upload', __name__)
@@ -76,6 +78,13 @@ def upload_file():
             (case_id, f'Document "{filename}" was uploaded and analyzed by AI.', request.user_id)
         )
         conn.commit()
+
+    # [RAG Integration] Launch background thread to chunk, embed, and index this document
+    threading.Thread(
+        target=pipeline.index_case_document,
+        args=(int(case_id), doc_id, filename, extracted_text),
+        daemon=True
+    ).start()
 
     return jsonify({
         'id': doc_id,

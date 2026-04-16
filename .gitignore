@@ -10,6 +10,7 @@ backend/services/ai/providers/__pycache__/
 *.sqlite3
 backend/pocket_lawyer.db
 backend/uploads/
+backend/rag_indices/
 
 # Virtual Environments
 .env

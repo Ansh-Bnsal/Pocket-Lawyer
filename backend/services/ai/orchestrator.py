@@ -3,6 +3,7 @@ import threading
 import time
 from database import get_db
 from services.ai import ai
+from services.rag import pipeline
 
 class AIOrchestrator:
     @staticmethod
@@ -10,8 +11,13 @@ class AIOrchestrator:
         """
         Generator function that orchestrates the 3 workers and yields the SSE chunks.
         """
-        safe_context = (case_context or "")[:10000] 
-        print(f"[AI Orchestrator] Stream Start: {session_id} | Memory: {'Yes' if history else 'No'}")
+        # [RAG Integration] Retrieve document context if this is an established case
+        rag_context = pipeline.retrieve_context(case_id, message) if case_id else ""
+        if rag_context:
+            case_context = (case_context or "") + "\n" + rag_context
+            
+        safe_context = (case_context or "")[:25000] 
+        print(f"[AI Orchestrator] Stream Start: {session_id} | Memory: {'Yes' if history else 'No'} | RAG: {'Yes' if rag_context else 'No'}")
         
         worker_b_result = [None] # Intent / Cart Manager
         worker_c_result = [None] # Risk Analyst
