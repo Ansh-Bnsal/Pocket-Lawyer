@@ -24,10 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 3. Counter Animation for Hero Stats
-    const stats = document.querySelectorAll('.stat-number');
+    const stats = document.querySelectorAll('.stat-number[data-count]');
     
     const animateCounter = (el) => {
-        const target = parseInt(el.getAttribute('data-count'));
+        const countAttr = el.getAttribute('data-count');
+        if (!countAttr) return; // Don't animate non-numeric stats
+        
+        const target = parseInt(countAttr);
         const isPercent = el.innerText.includes('%');
         let current = 0;
         const duration = 2000; // 2 seconds
