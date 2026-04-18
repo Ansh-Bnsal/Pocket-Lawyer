@@ -12,7 +12,8 @@ CRITICAL: If the user mentions ANY form of harassment, fraud, crime, dispute, or
 Available Services (next_step IDs) — you MUST pick the MOST SPECIFIC one:
 
 DOCUMENT DRAFTING:
-1. 'rent_agreement' — Use when user discusses renting, landlord-tenant, lease, deposit, paying-guest.
+1. 'rent_agreement_residential' — Use when user discusses renting a home, flat, apartment, PG, or residential property.
+2. 'rent_agreement_commercial' — Use when user discusses renting an office, shop, warehouse, or commercial/business space.
 2. 'affidavit' — Use for self-declarations, name change, address proof, anti-ragging, education loan, sworn statements.
 3. 'poa' — Power of Attorney. Use when someone needs to authorize another person to act on their behalf (property, bank, legal).
 4. 'legal_notice' — Use when user has a dispute, wants to send a formal warning/demand to another party, cheque bounce, refund demand, harassment notice, termination dispute. THIS IS HIGH PRIORITY FOR DISPUTES.

@@ -32,7 +32,7 @@ const SharedServices = {
             return;
         }
 
-        const isDraft = (service.category === 'drafting') || ['rent_agreement', 'affidavit', 'poa', 'legal_notice', 'will', 'nda', 'gift_deed', 'employment_contract'].includes(serviceId);
+        const isDraft = (service.category === 'drafting') || serviceId.startsWith('rent') || ['affidavit', 'poa', 'legal_notice', 'will', 'nda', 'gift_deed', 'employment_contract'].includes(serviceId);
         document.getElementById('modal-title').innerText = isDraft ? `Draft: ${service.name}` : `Initiate: ${service.name}`;
         modal.classList.remove('hidden');
 
@@ -75,14 +75,14 @@ const SharedServices = {
         if (user) {
             if (type === 'esign') setField('signerName', user.name);
             if (type === 'estamp') setField('firstParty', user.name);
-            if (type === 'rent_agreement') setField('landlord_name', user.name);
+            if (type.startsWith('rent_agreement')) setField('landlord_name', user.name);
             if (type === 'affidavit') setField('name', user.name);
             if (type === 'poa') setField('name', user.name);
         }
 
         // 2. 🧠 AI-Extracted Data (Priority)
-        // Rent Agreement specific
-        if (type === 'rent_agreement') {
+        // Rent Agreement specific (Residential & Commercial)
+        if (type.startsWith('rent_agreement')) {
             setField('landlord_name', data.landlord_name);
             setField('tenant_name', data.tenant_name);
             setField('rent_amount', data.rent_amount);

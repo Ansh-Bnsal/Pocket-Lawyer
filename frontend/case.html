@@ -134,13 +134,49 @@
         <!-- Forms dynamically shown via services_shared.js -->
         <div id="step-esign" class="step-form"><div class="form-group"><label>Full Name</label><input type="text" name="signerName" class="form-input"></div><div class="form-group"><label>Aadhaar (Last 4)</label><input type="text" name="aadhaarLast4" class="form-input"></div></div>
         <div id="step-estamp" class="step-form"><div class="form-group"><label>State</label><select name="state" class="form-input"><option value="Delhi">Delhi</option><option value="Maharashtra">Maharashtra</option></select></div><div class="form-group"><label>Value</label><input type="number" name="value" class="form-input"></div></div>
-        <div id="step-rent_agreement" class="step-form">
+        <div id="step-rent_agreement_residential" class="step-form">
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <input type="text" name="landlord_name" class="form-input" placeholder="Landlord">
             <input type="text" name="tenant_name" class="form-input" placeholder="Tenant">
             <input type="number" name="rent_amount" class="form-input" placeholder="Rent (₹)">
             <input type="text" name="property_address" class="form-input" placeholder="Address" style="grid-column:span 2;">
           </div>
+        </div>
+        <div id="step-rent_agreement_commercial" class="step-form">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <input type="text" name="landlord_name" class="form-input" placeholder="Lessor/Landlord">
+            <input type="text" name="tenant_name" class="form-input" placeholder="Lessee/Company">
+            <input type="number" name="rent_amount" class="form-input" placeholder="Monthly Rent (₹)">
+            <input type="text" name="business_purpose" class="form-input" placeholder="Business Purpose">
+            <input type="text" name="property_address" class="form-input" placeholder="Commercial Address" style="grid-column:span 2;">
+          </div>
+        </div>
+        <div id="step-affidavit" class="step-form">
+          <div class="form-group"><label>Deponent Name</label><input type="text" name="name" class="form-input"></div>
+          <div class="form-group"><label>Affidavit Purpose</label><textarea name="statement_body" class="form-input" rows="2" placeholder="Describe the purpose of this affidavit..."></textarea></div>
+        </div>
+        <div id="step-legal_notice" class="step-form">
+          <div class="form-group"><label>Opposing Party Name</label><input type="text" name="receiver_name" class="form-input"></div>
+          <div class="form-group"><label>Grievance Details</label><textarea name="grievance_details" class="form-input" rows="3" placeholder="Describe why you are sending this notice..."></textarea></div>
+        </div>
+        <div id="step-will" class="step-form">
+          <div class="form-group"><label>Testator Name</label><input type="text" name="testator_name" class="form-input"></div>
+          <div class="form-group"><label>Beneficiaries & Assets</label><textarea name="beneficiary_details" class="form-input" rows="3" placeholder="List beneficiaries and their shares..."></textarea></div>
+        </div>
+        <div id="step-nda" class="step-form">
+          <div class="form-group"><label>Second Party Name</label><input type="text" name="party_2_name" class="form-input"></div>
+          <div class="form-group"><label>Purpose of Data Sharing</label><input type="text" name="purpose" class="form-input"></div>
+        </div>
+        <div id="step-gift_deed" class="step-form">
+          <div class="form-group"><label>Recipient (Donee) Name</label><input type="text" name="donee_name" class="form-input"></div>
+          <div class="form-group"><label>Asset Description</label><input type="text" name="gift_description" class="form-input"></div>
+        </div>
+        <div id="step-employment_contract" class="step-form">
+          <div class="form-group"><label>Employer/Company</label><input type="text" name="employer_name" class="form-input"></div>
+          <div class="form-group"><label>Salary Details</label><input type="text" name="salary" class="form-input"></div>
+        </div>
+        <div id="step-kyc" class="step-form">
+          <div class="alert alert-info">This will initiate a secure Video KYC session via Melento AI. Please keep your valid ID proofs ready.</div>
         </div>
         <div id="step-lawyer_appointment" class="step-form">
           <div class="form-group"><label>Case Category</label><input type="text" name="case_category" class="form-input" placeholder="e.g. Criminal, Family, Property"></div>

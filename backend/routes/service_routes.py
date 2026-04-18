@@ -67,17 +67,18 @@ def book_appointment():
 @require_auth
 def list_available_services():
     services = [
-        {"id": "rent_agreement", "name": "Rent Agreement (11-Month)", "desc": "Generate professional 11-month rent agreements with all mandatory clauses.", "price": "₹499", "price_raw": 499, "require_doc": False, "category": "drafting"},
-        {"id": "affidavit", "name": "General Affidavit", "desc": "Draft legally valid self-declaration affidavits for any purpose.", "price": "₹299", "price_raw": 299, "require_doc": False, "category": "drafting"},
-        {"id": "poa", "name": "Power of Attorney", "desc": "Draft a Special Power of Attorney for property, banking, or legal representation.", "price": "₹899", "price_raw": 899, "require_doc": False, "category": "drafting"},
-        {"id": "legal_notice", "name": "Legal Notice", "desc": "Draft a formal legal notice for disputes, refund demands, cheque bounce, or harassment.", "price": "₹849", "price_raw": 849, "require_doc": False, "category": "drafting"},
-        {"id": "will", "name": "Last Will & Testament", "desc": "Create a legally binding will for estate planning and asset distribution.", "price": "₹549", "price_raw": 549, "require_doc": False, "category": "drafting"},
+        {"id": "rent_agreement_residential", "name": "Rent Agreement — Residential", "desc": "Professional 11-month residential rental agreement with all mandatory clauses.", "price": "₹449", "price_raw": 449, "require_doc": False, "category": "drafting"},
+        {"id": "rent_agreement_commercial", "name": "Rent Agreement — Commercial", "desc": "Commercial/office space rental agreement with business-specific terms.", "price": "₹549", "price_raw": 549, "require_doc": False, "category": "drafting"},
+        {"id": "affidavit", "name": "General Affidavit", "desc": "Draft legally valid self-declaration affidavits for any purpose.", "price": "₹279", "price_raw": 279, "require_doc": False, "category": "drafting"},
+        {"id": "poa", "name": "Power of Attorney", "desc": "Draft a Special Power of Attorney for property, banking, or legal representation.", "price": "₹849", "price_raw": 849, "require_doc": False, "category": "drafting"},
+        {"id": "legal_notice", "name": "Legal Notice", "desc": "Draft a formal legal notice for disputes, refund demands, cheque bounce, or harassment.", "price": "₹749", "price_raw": 749, "require_doc": False, "category": "drafting"},
+        {"id": "will", "name": "Last Will & Testament", "desc": "Create a legally binding will for estate planning and asset distribution.", "price": "₹499", "price_raw": 499, "require_doc": False, "category": "drafting"},
         {"id": "nda", "name": "Non-Disclosure Agreement", "desc": "Protect business secrets with a professional NDA for startups and partnerships.", "price": "₹449", "price_raw": 449, "require_doc": False, "category": "drafting"},
-        {"id": "gift_deed", "name": "Gift Deed", "desc": "Transfer property or assets to a family member or third party through a legal gift deed.", "price": "₹699", "price_raw": 699, "require_doc": False, "category": "drafting"},
-        {"id": "employment_contract", "name": "Employment Contract", "desc": "Draft professional employment agreements covering salary, terms, and obligations.", "price": "₹549", "price_raw": 549, "require_doc": False, "category": "drafting"},
-        {"id": "esign", "name": "Aadhaar eSign", "desc": "Sign legally binding documents with Aadhaar OTP verification.", "price": "₹249", "price_raw": 249, "require_doc": True, "category": "infrastructure"},
-        {"id": "estamp", "name": "Digital Stamp Paper", "desc": "Purchase government-verified e-stamp papers for any state.", "price": "₹149 + Stamp Duty", "price_raw": 149, "require_doc": True, "category": "infrastructure"},
-        {"id": "kyc", "name": "Video KYC (VCIP)", "desc": "Securely verify your identity for legal matters via video call.", "price": "₹149", "price_raw": 149, "require_doc": False, "category": "infrastructure"},
+        {"id": "gift_deed", "name": "Gift Deed", "desc": "Transfer property or assets to a family member or third party through a legal gift deed.", "price": "₹599", "price_raw": 599, "require_doc": False, "category": "drafting"},
+        {"id": "employment_contract", "name": "Employment Contract", "desc": "Draft professional employment agreements covering salary, terms, and obligations.", "price": "₹499", "price_raw": 499, "require_doc": False, "category": "drafting"},
+        {"id": "esign", "name": "Aadhaar eSign", "desc": "Sign legally binding documents with Aadhaar OTP verification.", "price": "₹229", "price_raw": 229, "require_doc": True, "category": "infrastructure"},
+        {"id": "estamp", "name": "Digital Stamp Paper", "desc": "Purchase government-verified e-stamp papers for any state.", "price": "₹119 + Stamp Duty", "price_raw": 119, "require_doc": True, "category": "infrastructure"},
+        {"id": "kyc", "name": "Video KYC (VCIP)", "desc": "Securely verify your identity for legal matters via video call.", "price": "₹139", "price_raw": 139, "require_doc": False, "category": "infrastructure"},
         {"id": "lawyer_appointment", "name": "Lawyer Consultation", "desc": "Book a consultation with a specialist lawyer matched to your case type.", "price": "₹499", "price_raw": 499, "require_doc": False, "category": "consultation"}
     ]
     return jsonify(services), 200

@@ -60,6 +60,69 @@ WITNESS 1: ___________________
 WITNESS 2: ___________________
 """
 
+RENT_AGREEMENT_COMMERCIAL_TEMPLATE = """
+COMMERCIAL RENT AGREEMENT (11-MONTH)
+
+THIS COMMERCIAL RENT AGREEMENT is made at {city} on this {date} day of {month}, {year}, 
+BETWEEN:
+
+Mr./Ms./M/s. {landlord_name}, S/o D/o {landlord_parent}, residing at {landlord_address}, 
+hereinafter referred to as the "LANDLORD" (which expression shall mean and include 
+his/her/its heirs, successors, legal representatives and assigns) of the ONE PART.
+
+AND
+
+Mr./Ms./M/s. {tenant_name}, S/o D/o {tenant_parent}, having its registered office/
+residence at {tenant_address}, 
+hereinafter referred to as the "TENANT" (which expression shall mean and include 
+his/her/its heirs, successors, legal representatives and assigns) of the OTHER PART.
+
+WHEREAS the Landlord is the absolute owner of the commercial property situated at 
+{property_address} (hereinafter referred to as the "Premises").
+
+The Tenant has approached the Landlord to take the Premises on rent for commercial/
+business purposes, and the Landlord has agreed to let out the same on the following terms:
+
+1. TENURE: This agreement is for a period of 11 (Eleven) months only, commencing 
+from {start_date} and ending on {end_date}.
+
+2. RENT: The Tenant shall pay a monthly rent of INR {rent_amount} (Rupees {rent_words} Only) 
+on or before the {due_day} day of each English calendar month. GST, if applicable, 
+shall be borne by the {gst_bearer}.
+
+3. SECURITY DEPOSIT: The Tenant has deposited an amount of INR {deposit_amount} 
+(Rupees {deposit_words} Only) as an interest-free security deposit.
+
+4. PURPOSE: The Premises shall be used strictly for {business_purpose} purposes only. 
+The Tenant shall not sublet, partition, or assign the Premises to any third party 
+without prior written consent of the Landlord.
+
+5. SIGNAGE: The Tenant shall be permitted to display business signage on the 
+Premises subject to local municipal regulations and the Landlord's written approval.
+
+6. MAINTENANCE & UTILITIES: The Tenant shall bear all utility charges including 
+electricity, water, internet, and property tax proportionate to the rented area. 
+Structural maintenance shall be the responsibility of the Landlord.
+
+7. TERMINATION: Either party can terminate this agreement by giving {notice_period} 
+month(s) prior written notice.
+
+8. LOCK-IN PERIOD: There shall be a lock-in period of {lock_in_months} months, 
+during which neither party can terminate the agreement.
+
+9. INDEMNITY: The Tenant shall indemnify the Landlord against any loss, damage, 
+or liability arising from the Tenant's use of the Premises.
+
+IN WITNESS WHEREOF, the parties hereto have signed this agreement in the presence 
+of witnesses.
+
+LANDLORD: ____________________
+TENANT:   ____________________
+
+WITNESS 1: ___________________
+WITNESS 2: ___________________
+"""
+
 GENERAL_AFFIDAVIT_TEMPLATE = """
 AFFIDAVIT
 
@@ -368,7 +431,8 @@ WITNESS 2: ___________________
 """
 
 templates_library = {
-    "rent_agreement": RENT_AGREEMENT_TEMPLATE,
+    "rent_agreement_residential": RENT_AGREEMENT_TEMPLATE,
+    "rent_agreement_commercial": RENT_AGREEMENT_COMMERCIAL_TEMPLATE,
     "affidavit": GENERAL_AFFIDAVIT_TEMPLATE,
     "poa": SPECIAL_POA_TEMPLATE,
     "legal_notice_138": LEGAL_NOTICE_138_TEMPLATE,

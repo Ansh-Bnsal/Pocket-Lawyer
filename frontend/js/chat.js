@@ -413,7 +413,8 @@ function renderIntentAction(data, container) {
     
     if (data.next_step === 'esign') { icon = '✍️'; subtitle = 'Direct access to document execution.'; }
     else if (data.next_step === 'estamp') { icon = '📜'; subtitle = 'Direct access to stamp paper acquisition.'; }
-    else if (data.next_step === 'rent_agreement') { icon = '🏠'; subtitle = 'Direct access to 11-Month drafting.'; }
+    else if (data.next_step === 'rent_agreement_residential') { icon = '🏠'; subtitle = 'Direct access to Residential Rental drafting.'; }
+    else if (data.next_step === 'rent_agreement_commercial') { icon = '🏢'; subtitle = 'Direct access to Commercial Lease drafting.'; }
     else if (data.next_step === 'lawyer_appointment') { icon = '📅'; subtitle = 'Schedule a professional consultation.'; }
     else if (data.next_step === 'affidavit') { icon = '⚖️'; subtitle = 'Direct access to Sworn Affidavit drafting.'; }
     else if (data.next_step === 'kyc') { icon = '📹'; subtitle = 'Direct access to ID verification.'; }
