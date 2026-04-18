@@ -86,19 +86,33 @@ const SharedServices = {
             setField('landlord_name', data.landlord_name);
             setField('tenant_name', data.tenant_name);
             setField('rent_amount', data.rent_amount);
-            setField('deposit_amount', data.deposit_amount);
+            setField('security_deposit', data.security_deposit || data.deposit);
+            setField('tenure_months', data.tenure_months || data.period || 11);
+            setField('notice_period_days', data.notice_period_days || 30);
+            setField('escalation_rate', data.escalation_rate || data.increase_percentage);
             setField('property_address', data.address || data.property_address);
+            setField('business_purpose', data.business_purpose || data.purpose);
         }
 
         // eSign specific
         if (type === 'esign') {
             setField('signerName', data.signer_name || data.name);
+            setField('aadhaarLast4', data.aadhaar_last_4);
+        }
+
+        // eStamp specific
+        if (type === 'estamp') {
+            setField('state', data.state);
+            setField('value', data.value || data.stamp_value);
+            setField('firstParty', data.first_party || data.sender_name);
+            setField('secondParty', data.second_party || data.receiver_name);
         }
 
         // Power of Attorney
         if (type === 'poa') {
+            setField('principal_name', data.principal_name || user?.name);
             setField('attorney_name', data.attorney_name);
-            setField('subject_matter', data.purpose);
+            setField('powers_context', data.powers_context || data.purpose);
         }
 
         // Lawyer Appointment
@@ -109,13 +123,10 @@ const SharedServices = {
 
         // Legal Notice
         if (type === 'legal_notice') {
-            setField('sender_name', user ? user.name : '');
             setField('receiver_name', data.receiver_name || data.opposing_party || '');
-            setField('receiver_address', data.receiver_address || '');
-            setField('subject', data.subject || data.grievance || '');
+            setField('demand_amount', data.demand_amount || data.recovery_amount);
+            setField('notice_deadline_days', data.notice_deadline_days || 15);
             setField('grievance_details', data.grievance_details || data.case_reasoning || '');
-            setField('demand_details', data.demand || '');
-            setField('city', data.city || '');
         }
 
         // Will
@@ -123,35 +134,93 @@ const SharedServices = {
             setField('testator_name', user ? user.name : '');
             setField('executor_name', data.executor_name || '');
             setField('beneficiary_details', data.beneficiaries || '');
-            setField('city', data.city || '');
         }
 
         // NDA
         if (type === 'nda') {
-            setField('party_1_name', user ? user.name : '');
             setField('party_2_name', data.party_2_name || data.other_party || '');
             setField('purpose', data.purpose || data.subject || '');
-            setField('validity_period', data.validity_period || '2 years');
-            setField('city', data.city || '');
+            setField('secrecy_term_years', data.secrecy_term_years || 3);
         }
 
         // Gift Deed
         if (type === 'gift_deed') {
-            setField('donor_name', user ? user.name : '');
             setField('donee_name', data.donee_name || data.recipient || '');
-            setField('relationship', data.relationship || '');
+            setField('asset_value', data.asset_value || data.value);
             setField('gift_description', data.gift_description || data.property || '');
-            setField('city', data.city || '');
         }
 
         // Employment Contract
         if (type === 'employment_contract') {
             setField('employer_name', data.employer_name || data.company || '');
-            setField('employee_name', data.employee_name || (user ? user.name : ''));
-            setField('designation', data.designation || data.role || '');
             setField('salary', data.salary || '');
-            setField('start_date', data.start_date || '');
-            setField('city', data.city || '');
+            setField('notice_period_months', data.notice_period_months || 1);
         }
+
+        // Affidavit
+        if (type === 'affidavit') {
+            setField('name', user?.name);
+            setField('age', data.age);
+            setField('father_husband_name', data.father_husband_name);
+            setField('statement_body', data.statement_body || data.purpose);
+        }
+    },
+
+    /**
+     * Centralized submission handler for all legal services.
+     */
+    async handleSubmit(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const serviceId = this.currentServiceId;
+
+        const fileInput = document.getElementById('shared-file-input');
+        const file = fileInput ? fileInput.files[0] : null;
+
+        try {
+            Utils.showToast("Initiating production workflow...", "info");
+            let response;
+
+            if (serviceId === 'esign') {
+                if (!file) throw new Error("Please attach a document for eSign.");
+                response = await API.requestESign(data.signerName, data.aadhaarLast4, file);
+            } 
+            else if (serviceId === 'estamp') {
+                if (!file) throw new Error("Please attach a document for eStamp.");
+                response = await API.requestEStamp(data.state, data.value, file, data.firstParty, data.secondParty);
+            }
+            else if (serviceId === 'kyc') {
+                response = await API.requestKYC('video');
+            }
+            else {
+                // Drafting Service (Will, Rent, NDA, etc.)
+                response = await API.requestDraft(serviceId, data);
+            }
+
+            if (response.error) throw new Error(response.error);
+
+            Utils.showToast("Success! Service initiated.", "success");
+            this.closeModals();
+            
+            // Refresh parent page if relevant functions exist
+            if (typeof loadCombinedList === 'function') loadCombinedList();
+            if (typeof loadActiveRequests === 'function') loadActiveRequests();
+
+        } catch (err) {
+            Utils.showToast(err.message, "error");
+        }
+    },
+
+    closeModals() {
+        const modal = document.getElementById('service-modal');
+        if (modal) modal.classList.add('hidden');
     }
 };
+
+// Global hook for the form
+function handleSharedServiceSubmit(e) {
+    SharedServices.handleSubmit(e);
+}
+

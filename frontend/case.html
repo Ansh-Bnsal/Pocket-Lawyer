@@ -132,48 +132,87 @@
       </div>
       <form id="service-context-form" onsubmit="handleSharedServiceSubmit(event)">
         <!-- Forms dynamically shown via services_shared.js -->
-        <div id="step-esign" class="step-form"><div class="form-group"><label>Full Name</label><input type="text" name="signerName" class="form-input"></div><div class="form-group"><label>Aadhaar (Last 4)</label><input type="text" name="aadhaarLast4" class="form-input"></div></div>
-        <div id="step-estamp" class="step-form"><div class="form-group"><label>State</label><select name="state" class="form-input"><option value="Delhi">Delhi</option><option value="Maharashtra">Maharashtra</option></select></div><div class="form-group"><label>Value</label><input type="number" name="value" class="form-input"></div></div>
+        <div id="step-esign" class="step-form">
+          <div class="form-group"><label>Full Name</label><input type="text" name="signerName" class="form-input" placeholder="As per Aadhaar"></div>
+          <div class="form-group"><label>Aadhaar (Last 4 Digits)</label><input type="text" name="aadhaarLast4" class="form-input" maxlength="4" placeholder="XXXX"></div>
+        </div>
+        <div id="step-estamp" class="step-form">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="form-group"><label>State</label><select name="state" class="form-input"><option value="Delhi">Delhi</option><option value="Maharashtra">Maharashtra</option><option value="Karnataka">Karnataka</option></select></div>
+            <div class="form-group"><label>Stamp Value (₹)</label><input type="number" name="value" class="form-input" placeholder="100, 500, etc."></div>
+          </div>
+          <div class="form-group"><label>First Party Name</label><input type="text" name="firstParty" class="form-input"></div>
+          <div class="form-group"><label>Second Party Name</label><input type="text" name="secondParty" class="form-input"></div>
+        </div>
         <div id="step-rent_agreement_residential" class="step-form">
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <input type="text" name="landlord_name" class="form-input" placeholder="Landlord">
             <input type="text" name="tenant_name" class="form-input" placeholder="Tenant">
-            <input type="number" name="rent_amount" class="form-input" placeholder="Rent (₹)">
-            <input type="text" name="property_address" class="form-input" placeholder="Address" style="grid-column:span 2;">
+            <input type="number" name="rent_amount" class="form-input" placeholder="Monthly Rent (₹)">
+            <input type="number" name="security_deposit" class="form-input" placeholder="Security Deposit (₹)">
+            <input type="number" name="tenure_months" class="form-input" placeholder="Tenure (Months)">
+            <input type="number" name="notice_period_days" class="form-input" placeholder="Notice Period (Days)">
+            <input type="text" name="property_address" class="form-input" placeholder="Full Property Address" style="grid-column:span 2;">
           </div>
         </div>
         <div id="step-rent_agreement_commercial" class="step-form">
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-            <input type="text" name="landlord_name" class="form-input" placeholder="Lessor/Landlord">
+            <input type="text" name="landlord_name" class="form-input" placeholder="Lessor">
             <input type="text" name="tenant_name" class="form-input" placeholder="Lessee/Company">
             <input type="number" name="rent_amount" class="form-input" placeholder="Monthly Rent (₹)">
-            <input type="text" name="business_purpose" class="form-input" placeholder="Business Purpose">
+            <input type="number" name="security_deposit" class="form-input" placeholder="Security Deposit (₹)">
+            <input type="number" name="tenure_months" class="form-input" placeholder="Tenure (Months)">
+            <input type="number" name="escalation_rate" class="form-input" placeholder="Annual Escalation (%)">
+            <input type="text" name="business_purpose" class="form-input" placeholder="Business Purpose (e.g. Retail)">
             <input type="text" name="property_address" class="form-input" placeholder="Commercial Address" style="grid-column:span 2;">
           </div>
         </div>
         <div id="step-affidavit" class="step-form">
-          <div class="form-group"><label>Deponent Name</label><input type="text" name="name" class="form-input"></div>
-          <div class="form-group"><label>Affidavit Purpose</label><textarea name="statement_body" class="form-input" rows="2" placeholder="Describe the purpose of this affidavit..."></textarea></div>
+          <div style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
+            <div class="form-group"><label>Deponent Name</label><input type="text" name="name" class="form-input"></div>
+            <div class="form-group"><label>Age</label><input type="number" name="age" class="form-input"></div>
+          </div>
+          <div class="form-group"><label>Father/Husband's Name</label><input type="text" name="father_husband_name" class="form-input"></div>
+          <div class="form-group"><label>Affidavit Purpose</label><textarea name="statement_body" class="form-input" rows="2" placeholder="Describe the purpose..."></textarea></div>
         </div>
         <div id="step-legal_notice" class="step-form">
           <div class="form-group"><label>Opposing Party Name</label><input type="text" name="receiver_name" class="form-input"></div>
-          <div class="form-group"><label>Grievance Details</label><textarea name="grievance_details" class="form-input" rows="3" placeholder="Describe why you are sending this notice..."></textarea></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="form-group"><label>Demand Value (₹)</label><input type="number" name="demand_amount" class="form-input"></div>
+            <div class="form-group"><label>Response Deadline (Days)</label><input type="number" name="notice_deadline_days" class="form-input" value="15"></div>
+          </div>
+          <div class="form-group"><label>Grievance Details</label><textarea name="grievance_details" class="form-input" rows="3" placeholder="Describe the dispute..."></textarea></div>
         </div>
         <div id="step-will" class="step-form">
           <div class="form-group"><label>Testator Name</label><input type="text" name="testator_name" class="form-input"></div>
+          <div class="form-group"><label>Executor Name</label><input type="text" name="executor_name" class="form-input" placeholder="Person to manage the will"></div>
           <div class="form-group"><label>Beneficiaries & Assets</label><textarea name="beneficiary_details" class="form-input" rows="3" placeholder="List beneficiaries and their shares..."></textarea></div>
         </div>
         <div id="step-nda" class="step-form">
           <div class="form-group"><label>Second Party Name</label><input type="text" name="party_2_name" class="form-input"></div>
-          <div class="form-group"><label>Purpose of Data Sharing</label><input type="text" name="purpose" class="form-input"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="form-group"><label>Secrecy Term (Years)</label><input type="number" name="secrecy_term_years" class="form-input" value="3"></div>
+            <div class="form-group"><label>Purpose</label><input type="text" name="purpose" class="form-input" placeholder="e.g. M&A, Hiring"></div>
+          </div>
         </div>
         <div id="step-gift_deed" class="step-form">
           <div class="form-group"><label>Recipient (Donee) Name</label><input type="text" name="donee_name" class="form-input"></div>
-          <div class="form-group"><label>Asset Description</label><input type="text" name="gift_description" class="form-input"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="form-group"><label>Asset Value (₹)</label><input type="number" name="asset_value" class="form-input"></div>
+            <div class="form-group"><label>Asset Type</label><input type="text" name="gift_description" class="form-input" placeholder="e.g. Cash, Flat"></div>
+          </div>
         </div>
         <div id="step-employment_contract" class="step-form">
           <div class="form-group"><label>Employer/Company</label><input type="text" name="employer_name" class="form-input"></div>
-          <div class="form-group"><label>Salary Details</label><input type="text" name="salary" class="form-input"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="form-group"><label>Salary (Annual)</label><input type="number" name="salary" class="form-input"></div>
+            <div class="form-group"><label>Notice Period (Mo)</label><input type="number" name="notice_period_months" class="form-input" value="1"></div>
+          </div>
+        </div>
+        <div id="step-poa" class="step-form">
+          <div class="form-group"><label>Principal Name (Grantor)</label><input type="text" name="principal_name" class="form-input"></div>
+          <div class="form-group"><label>Attorney Name (Grantee)</label><input type="text" name="attorney_name" class="form-input"></div>
+          <div class="form-group"><label>Specific Powers Granted</label><textarea name="powers_context" class="form-input" rows="2" placeholder="e.g. To sell property X, to manage Bank Y..."></textarea></div>
         </div>
         <div id="step-kyc" class="step-form">
           <div class="alert alert-info">This will initiate a secure Video KYC session via Melento AI. Please keep your valid ID proofs ready.</div>
@@ -249,12 +288,6 @@
                 <p>One-click logic available</p>
             </div>
         `).join('');
-    }
-
-    async function handleSharedServiceSubmit(e) {
-        e.preventDefault();
-        Utils.showToast("Service successfully initiated from Case Hub!", "success");
-        closeModals();
     }
 
     function toggleChatSidebar() { document.getElementById('chat-sidebar')?.classList.toggle('open'); }
