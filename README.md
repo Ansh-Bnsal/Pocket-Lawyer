@@ -1,147 +1,82 @@
 # Pocket Lawyer 2.0 ⚖️
+**An AI-Native Legal Case Management & Documentation Platform**
 
-Pocket Lawyer 2.0 is a full-stack, AI-powered Legal SaaS platform. It acts as a smart, persistent case management system for Clients, Lawyers, and Law Firms. 
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.x-lightgrey?logo=flask)](https://flask.palletsprojects.com/)
+[![Gemini](https://img.shields.io/badge/AI-Google_Gemini-orange?logo=google-gemini)](https://aistudio.google.com/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-Unlike traditional platforms, this uses a revolutionary **"Case → Structure → Store → Continue"** paradigm powered by AI (Google Gemini / OpenAI / Anthropic) to extract structured legal Case Tokens from plain-text user input and document uploads.
-
----
-
-## 🎯 Features
-
-- **Ghost-Promotion Engine:** Start a casual text-based case prep. If the AI detects a legal injury or severe grievance (e.g. harassment, fraud), it transparently "Ghost-Promotes" the transient text into an official protected Case ID without user friction.
-- **Smart Services Cart:** AI Intent Extractors automatically identify when a lawyer consultation or legal drafting is required and injects high-converting UI action cards directly into the sidebar stream.
-- **Anti-Chatbot AI Engine:** Uses strict system prompts to force AI (Gemini/OpenAI) to return structured JSON data for case analysis, risk detection, and legal guidance instead of generic chatty responses.
-- **Case Token System:** Case data is serialized into versioned JSON tokens. When a client switches lawyers, the new lawyer receives the complete, structured context instantly.
-- **Document AI Processing:** Upload PDF/DOCX files and the AI automatically extracts the text, summarizes it, and highlights legal risks (RED/YELLOW/GREEN).
-- **Role-Based Access:** Distinct secured dashboards for Clients, Lawyers, and Firm Administrators.
-- **Zero-Config Database:** Uses SQLite to store cases, chat logs, notes, timelines, and documents. No need to run Postgres.
+Pocket Lawyer 2.0 is a full-stack SaaS platform designed to solve the **"Fragmented Legal Data"** problem. It uses a revolutionary **"Case → Structure → Store → Continue"** paradigm to ensure that legal history is never lost, even if lawyers change.
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Engineering Highlights (Core Technical Architecture)
 
-- **Frontend:** Vanilla HTML5, CSS3, JavaScript (No heavy frameworks)
-- **Backend:** Python 3.10+ / Flask
-- **Database:** SQLite (local persistent database)
-- **AI Integrations:** Google Gemini / OpenAI / Anthropic
-- **Security:** JWT-based Authentication + Password Hashing
+This project isn't just a chatbot; it's a **Legal Information Engine**. Behind the UI, I've implemented several advanced patterns to solve common LLM challenges:
 
----
+### 🧠 1. Rolling Summary Memory (Context Optimization)
+To solve the "Context Leak" problem in long legal conversations, I developed a **Rolling Summary Engine**. 
+*   **The Tech**: The backend monitors message count. For every 19 messages, it triggers an asynchronous summarization of the history and compresses it into a "State Token," which is then securely prepended to the next prompt.
+*   **Result**: Infinite conversational memory with zero token bloat.
 
-## 🚀 How to Run Locally
+### 🛡️ 2. Global Rate-Limit Shield (Scalability)
+Free-tier AI APIs (like Gemini) are prone to `429 Too Many Requests` errors.
+*   **The Tech**: Implemented a global `threading.Lock()` and a **Production-Grade Request Queue** in the AIOrchestrator to prevent concurrent AI collisions.
+*   **Result**: A stable UI experience that gracefully handles traffic bursts.
 
-### 1. Prerequisites
-- [Python 3.10+](https://www.python.org/downloads/) installed.
-
-### 2. Installation
-Clone the repository, then navigate to the backend directory and install the required dependencies:
-
-```bash
-cd backend
-pip install -r requirements.txt
-```
-
-### 3. API Key Configuration (Crucial)
-To enable the AI structuring features, you **must** configure an API key. By default, the system uses Google Gemini's free tier. 
-
-1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and create a free API Key.
-2. In the `backend` folder, duplicate the file named `.env.example`.
-3. Rename the duplicated file to exactly `.env`.
-4. Open your new `.env` file and paste your key:
-   ```env
-   # Google Gemini (default)
-   GEMINI_API_KEY="PASTE_YOUR_KEY_HERE"
-   ```
-*(Note: `.env` is safely ignored by Git so your keys won't leak when you push!)*
-
-### 4. Start the Application
-```bash
-python app.py
-```
-*The Flask server will automatically initialize the `pocket_lawyer.db` SQLite database.*
-
-Navigate to **http://localhost:5000** in your browser.
+### 🔌 3. Double-Proxy Architecture (API Flexibility)
+Built on a **Decoupled Service Pattern**, the platform features a "LegalDesk Proxy."
+*   **The Tech**: All calls to eSign (Aadhaar), eStamp (DigiStamp), and KYC (Video) are routed through a replaceable bridge. 
+*   **Result**: The site works out-of-the-box with high-fidelity mock data, but can be switched to real Production API endpoints (SignDesk/Melento) just by swapping a single config file.
 
 ---
 
-## 📂 Project Structure
+## 📋 Status & The "Full Vision" Roadmap
 
-```
-pocket-lawyer-2.0/
+In adherence to community standards, this roadmap clearly distinguishes between **Functional Code** and the **Product Vision**.
+
+### **Phase 1: Intelligence Core [COMPLETED]**
+- [x] **Strict JSON Extraction Protocol**: AI returns only structured JSON for data integrity.
+- [x] **12-Service Legal Catalog**: Full alignment with LegalDesk data requirements (Tenure, Escallation, Deposit).
+- [x] **Ghost-Promotion Engine**: Conversational intent extraction to auto-save official cases.
+
+### **Phase 2: Digital Vault [PLANNED]**
+- [ ] **Vault UI**: Category-based secure storage (Drafts, Official, Identity).
+- [ ] **Document Metadata Tracking**: Database-level state management for signed vs. pending docs.
+
+### **Phase 3: Firm-Side Ecosystem [PLANNED]**
+- [ ] **RAG Lawyer Research**: Retrieval-Augmented Generation for actual Indian Case Law (Precedents).
+- [ ] **Firm Assignment Workflow**: Multi-lawyer case routing and tracking.
+
+---
+
+## 📂 Project Anatomy
+
+```text
 ├── backend/
-│   ├── app.py                  # Flask Entry Point
-│   ├── config.py               # AI Provider & JWT Configurations
-│   ├── database.py             # SQLite Connection & Schema setup
-│   ├── requirements.txt        # Python Packages
-│   ├── routes/                 # API Endpoints (Auth, Cases, Chat, Upload)
 │   ├── services/
-│   │   ├── ai_service.py       # Strict AI-prompt engine
-│   │   └── file_service.py     # Document text extraction
-│   └── uploads/                # Local document storage (ignored in git)
-├── frontend/
-│   ├── index.html              # Landing Page
-│   ├── dashboard.html          # Client UI
-│   ├── lawyer_dashboard.html   # Lawyer UI
-│   ├── firm_dashboard.html     # Firm UI
-│   ├── case_detail.html        # Unified Case Management View
-│   ├── css/                    # Premium UI Styling
-│   ├── js/
-│   │   └── api.js              # Fetch-based API client for the Flask backend
-│   └── assets/
-└── README.md
+│   │   ├── ai_service.py       # Strict JSON-only prompt engine
+│   │   ├── legal_desk_main.py  # Orchestrator for drafting/signing
+│   │   └── legal_desk_proxy.py # The Production-Grade API Bridge
+│   ├── database.py             # SQLite Schema with Automated Migration logic
+│   └── app.py                  # Stream-enabled Flask Entry Point
+└── frontend/
+    ├── js/
+    │   ├── services_shared.js  # Centralized Service Mapping & AI pre-filling
+    │   └── api.js              # Tokenized JWT networking layer
+    └── dashboard.html          # High-fidelity Case Management UI
 ```
 
-## ⚖️ LegalDesk (SignDesk) Integration
+---
 
-Pocket Lawyer 2.0 uses a **Production-Grade Modular Bridge** to handle complex legal workflows like e-Signing, e-Stamping, and e-KYC.
+## 🚀 Speed-Dating the Demo (HR Quick Start)
 
-### Architecture: The "Replaceable Proxy"
-To make development and demoing easy, we have separated the API logic from the main program:
-
-1.  **`backend/services/legal_desk_main.py`**: The **Main Orchestrator**. This handles the business logic (database, file saving, case tokens). You **never** need to change this file.
-2.  **`backend/services/legal_desk_proxy.py`**: The **Replaceable API Bridge**. 
-    *   **Current State**: Returns high-fidelity **Mock JSON** and simulated success messages. It handles both JSON data and **File Attachments**.
-    *   **To Go Live**: Simply replace the methods in this file with real `requests.post()` calls to the SignDesk/Melento production endpoints.
-
-### Mock Data & Testing
-When using the system in "Mock Mode" (default):
-- **eSign**: Accepts a signer name and a PDF attachment. Returns status `INITIATED` and a mock sandbox URL.
-- **eStamp**: Simulates a 4-hour TAT (Turnaround Time) for government processing after receiving the uploaded document.
-- **Drafting**: Uses the `legal_templates.py` library to generate professional 1,500+ word legal documents.
-
-### Switching to Production
-1.  Obtain your `CLIENT_ID` and `API_KEY` from [Melento.ai](https://melento.ai/) or [SignDesk.com](https://signdesk.com/).
-2.  Update your `backend/config.py` with these credentials.
-3.  Modify `legal_desk_proxy.py` to remove the mock return statements and implement the real fetch logic using the `requests` library.
+1.  **Clone & Install**: `cd backend && pip install -r requirements.txt`
+2.  **API Key**: Add your `GEMINI_API_KEY` to `.env` (Google AI Studio keys work instantly).
+3.  **Run**: `python app.py`
+4.  **The "Wow" Moment**: Open the Chat, say *"I need a residential rent agreement for 11 months with a 15k deposit"* — watch the AI extract the data and pre-fill the complex legal form instantly.
 
 ---
 
-## 🧪 Running a Perfect Demo
-
-To showcase the Legal Services Hub without real API keys, use the following **Mock Values** and **Test Documents**:
-
-### 1. Mock Test Documents
-We have provided professional-grade mock documents in the `/test_documents` folder. Use these when the system asks to "Attach Document":
-- `test_documents/sample_rent_agreement.pdf`
-- `test_documents/sample_affidavit.pdf`
-- `test_documents/sample_poa.pdf`
-
-### 2. Required Mock Inputs
-| Service | Field | Suggested Mock Value |
-| :--- | :--- | :--- |
-| **Aadhaar eSign** | Signer Name | `Ansh Bansal` |
-| | Aadhaar (Last 4) | `1234` |
-| **Digital Stamp** | State | `Delhi` |
-| | Stamp Value | `100` |
-| **Video KYC** | KYC Type | `Video KYC (VCIP)` |
-| | Mobile Number | `+91 98765 43210` |
-
-### 3. Resetting the Demo
-To clear all mock service logs and start fresh:
-1. Log out of the dashboard.
-2. (Optional) Run `rm backend/uploads/*` to clear uploaded documents.
-
----
-
-## 📜 License
-MIT License.
+## ⚖️ License
+MIT License - Developed by Ansh Bansal.
