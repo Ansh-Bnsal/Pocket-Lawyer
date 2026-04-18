@@ -5,12 +5,18 @@ from database import get_db
 from services.ai import ai
 from services.rag import pipeline
 
+# Global Rate Limit Shield — ensures only ONE Gemini API call happens at a time
+_gemini_lock = threading.Lock()
+
 class AIOrchestrator:
     @staticmethod
-    def process_chat_stream(message: str, file_data: dict, session_id: int, case_id: int, user_role: str, case_context: str, history: list = None, is_transient: bool = False):
+    def process_chat_stream(message: str, file_data: dict, session_id: int, case_id: int, user_role: str, case_context: str, session_summary: str = None, history: list = None, is_transient: bool = False):
         """
         Generator function that orchestrates the 3 workers and yields the SSE chunks.
         """
+        if session_summary:
+            summary_msg = {"role": "system", "content": f"[SYSTEM ANCHOR] The following is a mathematical summary of older conversation history that dropped out of the limit window. You MUST remember these facts as if they were just spoken. Summary: {session_summary}"}
+            history = [summary_msg] + (history or [])
         # [RAG Integration] Retrieve document context if this is an established case
         rag_context = pipeline.retrieve_context(case_id, message) if case_id else ""
         if rag_context:
@@ -25,39 +31,45 @@ class AIOrchestrator:
 
         # Background Workers (Staggered by 500ms to prevent 429 burst)
         if user_role == 'client':
-            # Worker B: Intent Manager
-            def _run_worker_b():
-                time.sleep(0.5) # [Burst Shield]
-                try:
-                    print(f"[Worker B] Firing Intent Extractor...")
-                    res = ai.ask("intent_extractor", message or ("User uploaded a document." if file_data else "Reviewing context"), file_data=file_data, context=safe_context, history=history)
-                    print(f"[Worker B] RAW AI RESPONSE: {res.text}")
-                    print(f"[Worker B] PARSED AI DATA: {res.data}")
-                    
-                    if res.data and (res.data.get('next_step') or res.data.get('is_case_worthy')):
-                        worker_b_result[0] = res.data
-                        if not is_transient and case_id and res.data.get('next_step'):
-                            with get_db() as conn:
-                                cursor = conn.cursor()
-                                m_key = res.data.get('merge_key', 'default')
-                                cursor.execute('SELECT id FROM case_services WHERE case_id = ? AND merge_key = ? AND status = "pending"', (case_id, m_key))
-                                if not cursor.fetchone():
-                                    cursor.execute('''INSERT INTO case_services (case_id, service_type, title, merge_key, extracted_data)
-                                                   VALUES (?, ?, ?, ?, ?)''', (case_id, res.data['next_step'], res.data['title'], m_key, json.dumps(res.data.get('extracted_data'))))
-                                    conn.commit()
-                except Exception as e: 
-                    print(f"[Worker B CRASHED] {e}")
+            # Worker B: Intent Manager (skip trivial messages to save API quota)
+            skip_intent = len((message or '').strip()) < 10 and not file_data
+            if not skip_intent:
+                def _run_worker_b():
+                    time.sleep(0.5) # [Burst Shield]
+                    try:
+                        print(f"[Worker B] Firing Intent Extractor...")
+                        with _gemini_lock:
+                            res = ai.ask("intent_extractor", message or ("User uploaded a document." if file_data else "Reviewing context"), file_data=file_data, context=safe_context, history=history)
+                        print(f"[Worker B] RAW AI RESPONSE: {res.text}")
+                        print(f"[Worker B] PARSED AI DATA: {res.data}")
+                        
+                        if res.data and (res.data.get('next_step') or res.data.get('is_case_worthy')):
+                            worker_b_result[0] = res.data
+                            if not is_transient and case_id and res.data.get('next_step'):
+                                with get_db() as conn:
+                                    cursor = conn.cursor()
+                                    m_key = res.data.get('merge_key', 'default')
+                                    cursor.execute('SELECT id FROM case_services WHERE case_id = ? AND merge_key = ? AND status = "pending"', (case_id, m_key))
+                                    if not cursor.fetchone():
+                                        cursor.execute('''INSERT INTO case_services (case_id, service_type, title, merge_key, extracted_data)
+                                                       VALUES (?, ?, ?, ?, ?)''', (case_id, res.data['next_step'], res.data['title'], m_key, json.dumps(res.data.get('extracted_data'))))
+                                        conn.commit()
+                    except Exception as e: 
+                        print(f"[Worker B CRASHED] {e}")
 
-            t_b = threading.Thread(target=_run_worker_b, daemon=True)
-            threads.append(t_b)
-            t_b.start()
+                t_b = threading.Thread(target=_run_worker_b, daemon=True)
+                threads.append(t_b)
+                t_b.start()
+            else:
+                print(f"[Worker B] Skipped — message too short for intent analysis.")
 
             if file_data:
                 # Worker C: Risk Analyst
                 def _run_worker_c():
                     time.sleep(1.0) # [Burst Shield Extended]
                     try:
-                        res = ai.ask("doc_analysis", message or "Analyze risks", file_data=file_data)
+                        with _gemini_lock:
+                            res = ai.ask("doc_analysis", message or "Analyze risks", file_data=file_data)
                         if res.data: 
                             worker_c_result[0] = res.data
                     except Exception as e: 

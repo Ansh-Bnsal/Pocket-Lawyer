@@ -11,6 +11,51 @@ from database import get_db
 from services.ai import ai
 from routes.auth_routes import require_auth
 
+def __summarize_session_async(session_id):
+    """
+    Rolling Summary Engine — compresses [Previous Summary + Latest 20 messages] into a new summary.
+    This is O(1) constant speed: no matter if the conversation is 50 or 500 messages deep,
+    the AI only ever reads ~20 messages + 1 summary paragraph to recompress.
+    """
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            # 1. Fetch the existing summary (if any)
+            cursor.execute('SELECT summary FROM chat_sessions WHERE id = ?', (session_id,))
+            row = cursor.fetchone()
+            prev_summary = (row['summary'] or '') if row else ''
+
+            # 2. Fetch ONLY the last 20 messages (the new ones since last summary)
+            cursor.execute('SELECT role, content FROM chat_messages WHERE session_id = ? ORDER BY id DESC LIMIT 20', (session_id,))
+            msgs = cursor.fetchall()
+            if not msgs: return
+            msgs.reverse()
+            
+            recent_transcript = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in msgs])
+
+            # 3. Build the rolling prompt: Previous Summary + New Messages
+            if prev_summary:
+                prompt = (f"You are a legal case memory engine. Below is a PREVIOUS SUMMARY of an ongoing legal conversation, "
+                          f"followed by the LATEST 20 messages. Merge them into ONE comprehensive updated summary. "
+                          f"Retain ALL key facts, dates, names, legal issues, grievances, and action items. "
+                          f"Provide ONLY the dense technical summary, no commentary.\n\n"
+                          f"--- PREVIOUS SUMMARY ---\n{prev_summary}\n\n"
+                          f"--- LATEST MESSAGES ---\n{recent_transcript}")
+            else:
+                prompt = (f"Summarize the following legal conversation comprehensively. "
+                          f"Retain all key facts, dates, names, grievances, and legal issues discussed "
+                          f"so an AI attorney doesn't forget context. Provide ONLY the dense technical summary:\n\n"
+                          f"{recent_transcript}")
+            
+            res = ai.ask("chat", prompt)
+            if res.text:
+                cursor.execute('UPDATE chat_sessions SET summary = ? WHERE id = ?', (res.text, session_id))
+                conn.commit()
+                print(f"[Rolling Summary] Successfully anchored session #{session_id} memory.")
+    except Exception as e:
+        print(f"[Rolling Summary Failed] {str(e)}")
+
 def __generate_case_token_async(case_id, user_id, history_transcript):
     """
     Background worker that analyzes the raw chat transcript, generates a structured 
@@ -105,6 +150,27 @@ def chat():
                            (session_id, 'user', message or "[Attached Document]"))
             conn.commit()
 
+            session_summary = None
+            # [Memory Continuity] Fetch history from backend database
+            if not history:
+                cursor.execute('SELECT summary FROM chat_sessions WHERE id = ?', (session_id,))
+                sess_row = cursor.fetchone()
+                if sess_row and sess_row.get('summary'):
+                    session_summary = sess_row['summary']
+
+                cursor.execute('SELECT COUNT(*) as cnt FROM chat_messages WHERE session_id = ?', (session_id,))
+                total_msgs = cursor.fetchone()['cnt']
+
+                # Fetch ONLY the last 20 messages for the sliding window
+                cursor.execute('SELECT role, content FROM chat_messages WHERE session_id = ? ORDER BY id DESC LIMIT 20', (session_id,))
+                rows = cursor.fetchall()
+                rows.reverse()
+                history = [dict(r) for r in rows]
+
+                # [The Anchor Trigger] If boundary hit, schedule compression
+                if total_msgs > 0 and total_msgs % 19 == 0:
+                    threading.Thread(target=__summarize_session_async, args=(session_id,), daemon=True).start()
+
     # [Orchestration] Delegate everything to the AI Orchestrator
     from services.ai.orchestrator import AIOrchestrator
     stream_generator = AIOrchestrator.process_chat_stream(
@@ -114,6 +180,7 @@ def chat():
         case_id=case_id or 0,
         user_role=request.user_role,
         case_context=case_context,
+        session_summary=session_summary,
         history=history,
         is_transient=is_transient
     )

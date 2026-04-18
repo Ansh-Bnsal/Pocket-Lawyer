@@ -417,6 +417,11 @@ function renderIntentAction(data, container) {
     else if (data.next_step === 'lawyer_appointment') { icon = '📅'; subtitle = 'Schedule a professional consultation.'; }
     else if (data.next_step === 'affidavit') { icon = '⚖️'; subtitle = 'Direct access to Sworn Affidavit drafting.'; }
     else if (data.next_step === 'kyc') { icon = '📹'; subtitle = 'Direct access to ID verification.'; }
+    else if (data.next_step === 'legal_notice') { icon = '📨'; subtitle = 'Draft a formal legal notice for your dispute.'; }
+    else if (data.next_step === 'will') { icon = '📝'; subtitle = 'Create your Last Will & Testament.'; }
+    else if (data.next_step === 'nda') { icon = '🔒'; subtitle = 'Protect your business with an NDA.'; }
+    else if (data.next_step === 'gift_deed') { icon = '🎁'; subtitle = 'Transfer assets through a legal gift deed.'; }
+    else if (data.next_step === 'employment_contract') { icon = '💼'; subtitle = 'Draft a professional employment agreement.'; }
     
     const aiDataStr = JSON.stringify(data.extracted_data || {}).replace(/"/g, '&quot;');
     

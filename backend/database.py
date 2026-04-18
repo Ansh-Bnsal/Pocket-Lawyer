@@ -162,6 +162,7 @@ def init_db():
                 user_id         INTEGER     REFERENCES users(id),
                 case_id         INTEGER     REFERENCES cases(id),
                 title           TEXT        DEFAULT 'New Conversation',
+                summary         TEXT,
                 created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP
             )

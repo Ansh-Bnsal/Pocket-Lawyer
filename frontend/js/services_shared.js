@@ -32,7 +32,7 @@ const SharedServices = {
             return;
         }
 
-        const isDraft = serviceId.startsWith('rent') || serviceId.startsWith('affidavit') || serviceId.startsWith('poa');
+        const isDraft = (service.category === 'drafting') || ['rent_agreement', 'affidavit', 'poa', 'legal_notice', 'will', 'nda', 'gift_deed', 'employment_contract'].includes(serviceId);
         document.getElementById('modal-title').innerText = isDraft ? `Draft: ${service.name}` : `Initiate: ${service.name}`;
         modal.classList.remove('hidden');
 
@@ -105,6 +105,53 @@ const SharedServices = {
         if (type === 'lawyer_appointment') {
             setField('case_category', data.case_type || data.domain || data.grievance || '');
             setField('brief_context', data.case_reasoning || data.purpose || data.context || '');
+        }
+
+        // Legal Notice
+        if (type === 'legal_notice') {
+            setField('sender_name', user ? user.name : '');
+            setField('receiver_name', data.receiver_name || data.opposing_party || '');
+            setField('receiver_address', data.receiver_address || '');
+            setField('subject', data.subject || data.grievance || '');
+            setField('grievance_details', data.grievance_details || data.case_reasoning || '');
+            setField('demand_details', data.demand || '');
+            setField('city', data.city || '');
+        }
+
+        // Will
+        if (type === 'will') {
+            setField('testator_name', user ? user.name : '');
+            setField('executor_name', data.executor_name || '');
+            setField('beneficiary_details', data.beneficiaries || '');
+            setField('city', data.city || '');
+        }
+
+        // NDA
+        if (type === 'nda') {
+            setField('party_1_name', user ? user.name : '');
+            setField('party_2_name', data.party_2_name || data.other_party || '');
+            setField('purpose', data.purpose || data.subject || '');
+            setField('validity_period', data.validity_period || '2 years');
+            setField('city', data.city || '');
+        }
+
+        // Gift Deed
+        if (type === 'gift_deed') {
+            setField('donor_name', user ? user.name : '');
+            setField('donee_name', data.donee_name || data.recipient || '');
+            setField('relationship', data.relationship || '');
+            setField('gift_description', data.gift_description || data.property || '');
+            setField('city', data.city || '');
+        }
+
+        // Employment Contract
+        if (type === 'employment_contract') {
+            setField('employer_name', data.employer_name || data.company || '');
+            setField('employee_name', data.employee_name || (user ? user.name : ''));
+            setField('designation', data.designation || data.role || '');
+            setField('salary', data.salary || '');
+            setField('start_date', data.start_date || '');
+            setField('city', data.city || '');
         }
     }
 };

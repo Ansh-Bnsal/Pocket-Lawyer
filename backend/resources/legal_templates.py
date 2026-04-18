@@ -126,9 +126,256 @@ Dated at {city} this {date} day of {month}, {year}.
 ADVOCATE
 """
 
+GENERAL_LEGAL_NOTICE_TEMPLATE = """
+LEGAL NOTICE
+
+BY REGISTERED A.D./SPEED POST
+
+From: {sender_name}
+Address: {sender_address}
+
+To: {receiver_name}
+Address: {receiver_address}
+
+Date: {date}/{month}/{year}
+
+Subject: {subject}
+
+Dear Sir/Madam,
+
+Under instructions from and on behalf of my client, Mr./Ms. {sender_name}, 
+I hereby serve upon you the following Legal Notice:
+
+1. That my client states as follows:
+{grievance_details}
+
+2. That despite repeated verbal and written requests, you have failed to 
+address the above matter, causing my client significant hardship and 
+financial/emotional damage.
+
+3. That my client hereby demands the following:
+{demand_details}
+
+4. That you are hereby called upon to comply with the above demand within 
+15 (Fifteen) days of receipt of this notice, failing which my client shall 
+be compelled to initiate appropriate civil and/or criminal proceedings 
+against you at your own risk, cost, and consequence.
+
+This notice is issued without prejudice to any other rights and remedies 
+available to my client under law.
+
+Issued at {city}.
+
+ADVOCATE / SENDER: ____________________
+"""
+
+WILL_TEMPLATE = """
+LAST WILL AND TESTAMENT
+
+I, {testator_name}, S/o D/o {parent_name}, aged about {age} years, residing at 
+{address}, being of sound mind and disposing memory, do hereby declare this to 
+be my Last Will and Testament, revoking all previous Wills and Codicils made by me.
+
+1. I appoint Mr./Ms. {executor_name}, residing at {executor_address}, as the 
+Executor of this Will, who shall carry out my wishes as stated herein.
+
+2. DISTRIBUTION OF ASSETS:
+
+{beneficiary_details}
+
+3. I declare that I have made this Will of my own free will, without any 
+coercion, undue influence, or fraud by any person.
+
+4. In case any beneficiary named herein predeceases me, the share allotted to 
+such person shall be distributed equally among the surviving beneficiaries, 
+unless otherwise specified.
+
+IN WITNESS WHEREOF, I have signed this Will at {city} on this {date} day 
+of {month}, {year}, in the presence of the following witnesses:
+
+TESTATOR: ____________________
+
+WITNESS 1: ___________________
+Name:
+Address:
+
+WITNESS 2: ___________________
+Name:
+Address:
+"""
+
+NDA_TEMPLATE = """
+NON-DISCLOSURE AGREEMENT (NDA)
+
+THIS NON-DISCLOSURE AGREEMENT is made at {city} on this {date} day of 
+{month}, {year},
+
+BETWEEN:
+
+Mr./Ms./M/s. {party_1_name}, having its office/residence at {party_1_address}
+(hereinafter referred to as the "Disclosing Party")
+
+AND
+
+Mr./Ms./M/s. {party_2_name}, having its office/residence at {party_2_address}
+(hereinafter referred to as the "Receiving Party")
+
+WHEREAS the Disclosing Party possesses certain confidential and proprietary 
+information relating to {purpose} and wishes to disclose the same to the 
+Receiving Party for the purpose of {purpose}.
+
+NOW, THEREFORE, the parties agree as follows:
+
+1. DEFINITION OF CONFIDENTIAL INFORMATION: "Confidential Information" shall 
+include all data, business strategies, financial information, technical know-how, 
+trade secrets, client lists, source code, and any other information disclosed 
+by the Disclosing Party, whether in writing, orally, or by any other means.
+
+2. OBLIGATIONS: The Receiving Party shall:
+   a) Hold all Confidential Information in strict confidence.
+   b) Not disclose, publish, or communicate such information to any third party.
+   c) Use such information solely for the purpose stated above.
+   d) Take all reasonable precautions to prevent unauthorized disclosure.
+
+3. EXCLUSIONS: This agreement does not cover information that:
+   a) Is or becomes publicly available without breach of this Agreement.
+   b) Was known to the Receiving Party before disclosure.
+   c) Is independently developed by the Receiving Party.
+
+4. TERM: This Agreement shall remain in effect for a period of {validity_period} 
+from the date of execution. Obligations of confidentiality shall survive 
+termination for an additional period of 2 (two) years.
+
+5. REMEDIES: The Disclosing Party shall be entitled to seek injunctive relief 
+and damages in the event of any breach of this Agreement.
+
+6. GOVERNING LAW: This Agreement shall be governed by the laws of India. 
+Disputes shall be subject to the exclusive jurisdiction of the courts at {city}.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement:
+
+DISCLOSING PARTY: ____________________
+RECEIVING PARTY:  ____________________
+
+WITNESS 1: ___________________
+WITNESS 2: ___________________
+"""
+
+GIFT_DEED_TEMPLATE = """
+GIFT DEED
+
+THIS DEED OF GIFT is made at {city} on this {date} day of {month}, {year},
+
+BY:
+Mr./Ms. {donor_name}, S/o D/o {donor_parent}, aged about {donor_age} years, 
+residing at {donor_address}
+(hereinafter referred to as the "DONOR")
+
+IN FAVOUR OF:
+Mr./Ms. {donee_name}, S/o D/o {donee_parent}, aged about {donee_age} years, 
+residing at {donee_address}
+(hereinafter referred to as the "DONEE")
+
+Relationship between Donor and Donee: {relationship}
+
+WHEREAS the Donor is the absolute and lawful owner of the following property/assets:
+
+{gift_description}
+
+AND WHEREAS the Donor, out of natural love and affection for the Donee, 
+desires to gift the above-described property/assets to the Donee absolutely 
+and unconditionally.
+
+NOW THIS DEED WITNESSETH:
+
+1. That the Donor hereby gifts, grants, and transfers the above-described 
+property/assets to the Donee absolutely, forever, and without any consideration.
+
+2. That the Donee has accepted this gift and shall henceforth be the absolute 
+owner of the said property/assets.
+
+3. That the Donor has delivered or shall deliver possession of the said 
+property/assets to the Donee.
+
+4. That the Donor shall have no claim, right, or interest whatsoever over 
+the said property/assets after the execution of this Deed.
+
+IN WITNESS WHEREOF, the Donor and Donee have signed this Deed:
+
+DONOR:  ____________________
+DONEE:  ____________________
+
+WITNESS 1: ___________________
+WITNESS 2: ___________________
+"""
+
+EMPLOYMENT_CONTRACT_TEMPLATE = """
+EMPLOYMENT CONTRACT
+
+THIS EMPLOYMENT AGREEMENT is made at {city} on this {date} day of {month}, {year},
+
+BETWEEN:
+M/s. {employer_name}, having its registered office at {employer_address}
+(hereinafter referred to as the "Employer")
+
+AND:
+Mr./Ms. {employee_name}, S/o D/o {employee_parent}, residing at {employee_address}
+(hereinafter referred to as the "Employee")
+
+The Employer hereby appoints the Employee on the following terms and conditions:
+
+1. DESIGNATION: The Employee shall be employed as {designation}.
+
+2. COMMENCEMENT: This employment shall commence from {start_date}.
+
+3. COMPENSATION:
+   a) Basic Salary: INR {salary} per month.
+   b) Additional benefits as per the company's prevailing policies.
+
+4. WORKING HOURS: The Employee shall work {working_hours} hours per week, 
+as per the regular schedule of the Employer.
+
+5. PROBATION: The Employee shall serve a probation period of {probation_period}, 
+during which employment may be terminated by either party with {notice_period_probation} notice.
+
+6. NOTICE PERIOD: After confirmation, either party may terminate this 
+employment by giving {notice_period} written notice.
+
+7. CONFIDENTIALITY: The Employee agrees to maintain strict confidentiality 
+regarding all proprietary information, trade secrets, and business operations 
+of the Employer during and after the term of employment.
+
+8. NON-COMPETE: The Employee shall not engage in any business or employment 
+that directly competes with the Employer for a period of {non_compete_period} 
+after termination.
+
+9. TERMINATION: The Employer reserves the right to terminate employment 
+immediately for misconduct, breach of contract, or poor performance after 
+due process.
+
+10. GOVERNING LAW: This Agreement shall be governed by the laws of India 
+and subject to the jurisdiction of courts at {city}.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement:
+
+EMPLOYER:  ____________________
+(Authorized Signatory)
+
+EMPLOYEE:  ____________________
+
+WITNESS 1: ___________________
+WITNESS 2: ___________________
+"""
+
 templates_library = {
     "rent_agreement": RENT_AGREEMENT_TEMPLATE,
     "affidavit": GENERAL_AFFIDAVIT_TEMPLATE,
     "poa": SPECIAL_POA_TEMPLATE,
-    "notic_138": LEGAL_NOTICE_138_TEMPLATE
+    "legal_notice_138": LEGAL_NOTICE_138_TEMPLATE,
+    "legal_notice": GENERAL_LEGAL_NOTICE_TEMPLATE,
+    "will": WILL_TEMPLATE,
+    "nda": NDA_TEMPLATE,
+    "gift_deed": GIFT_DEED_TEMPLATE,
+    "employment_contract": EMPLOYMENT_CONTRACT_TEMPLATE
 }
+
